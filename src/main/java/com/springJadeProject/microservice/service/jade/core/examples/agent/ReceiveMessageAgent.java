@@ -2,14 +2,14 @@ package com.springJadeProject.microservice.service.jade.core.examples.agent;
 
 import com.springJadeProject.microservice.service.jade.core.agent.AgentInterface;
 import com.springJadeProject.microservice.service.jade.core.agent.AgentSpring;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 /**
  *
  * @author Alejandro Reyes
  */
 //@Stateless @AgentQualifier(type=AgentType.RECEIVE_MESSAGE_AGENT)
-@Component
+@Service
 public class ReceiveMessageAgent extends AgentSpring implements AgentInterface{
 
     @Override

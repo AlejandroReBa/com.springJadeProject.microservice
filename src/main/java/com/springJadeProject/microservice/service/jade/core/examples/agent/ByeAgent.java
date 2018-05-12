@@ -2,7 +2,7 @@ package com.springJadeProject.microservice.service.jade.core.examples.agent;
 
 import com.springJadeProject.microservice.service.jade.core.agent.AgentInterface;
 import com.springJadeProject.microservice.service.jade.core.agent.AgentSpring;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 /**
  *
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
  */
 
 //@Stateless @AgentQualifier(type=AgentType.BYEAGENT)
-@Component
+@Service
 public class ByeAgent extends AgentSpring implements AgentInterface {//Agent implements AgentInterface{
 
     @Override

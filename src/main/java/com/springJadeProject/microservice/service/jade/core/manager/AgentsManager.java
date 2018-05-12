@@ -7,8 +7,7 @@ import jade.core.ProfileImpl;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -138,6 +137,15 @@ public class AgentsManager {
             }
         }
 
+    }
+
+
+    //Not sure if it should be here (SOLID principles)
+    public List<Agent> getAgentsOnContainer (){
+        Collection<Agent> agentCollection = agentsOnContainer.values();
+        Agent AMSAgent = agentsOnContainer.get("AMSAgent");
+        agentCollection.remove(AMSAgent);
+        return new ArrayList<>(agentCollection);
     }
 
 }

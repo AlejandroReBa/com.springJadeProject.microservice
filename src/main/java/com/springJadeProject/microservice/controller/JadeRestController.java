@@ -2,61 +2,76 @@ package com.springJadeProject.microservice.controller;
 
 //import com.rest.api.spring.basic.test.v1.model.entity.Student;
 //import com.rest.api.spring.basic.test.v1.service.StudentService;
-import com.springJadeProject.microservice.service.jade.core.examples.ams.AMSAgent;
+import com.springJadeProject.microservice.model.ResponseMessageModel.APIActionDescription;
+import com.springJadeProject.microservice.model.ResponseMessageModel.ResponseNotificationMessage;
+import com.springJadeProject.microservice.model.ResponseMessageModel.contract.ResponseMessageInterface;
+import com.springJadeProject.microservice.service.api.APIDescriptionService;
+import com.springJadeProject.microservice.service.jade.core.manager.AMSAgent;
 import com.springJadeProject.microservice.service.jade.core.manager.AgentsManager;
 import jade.core.Agent;
 import jade.domain.FIPAAgentManagement.AMSAgentDescription;
-import jade.wrapper.ControllerException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
-import java.util.Collection;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/api")
 public class JadeRestController {
 
     @Autowired
+    private AgentsManager agentsManager;
+
+    @Autowired
     private AMSAgent amsAgent;
+
+    @Autowired
+    private APIDescriptionService apiDescriptionService;
 
 //    @Autowired
 //    private StudentService studentService;
 
-//    @GetMapping
-//    public Collection<Student> getAllStudents(){
-//        return studentService.getAllStudents();
-//    }
-
     @GetMapping
-    public Agent getAgent(){
-        return new Agent();
+    public List<APIActionDescription> getApiDescription(){
+        return apiDescriptionService.getAPIDescription();
     }
 
-//    @GetMapping
-//    @RequestMapping("/load")
-//    public Agent load(){
-//        amsAgent.init();
+    @GetMapping("/agent")
+    public ResponseMessageInterface getAgentsFrontpage(){
+        return new ResponseNotificationMessage("use /api/agent/{id} to get your agent data. Use /api/agents to get all active agents");
+    }
+
+//    @GetMapping("/agent")
+//    public Agent getAgentsFrontpage(){
 //        return new Agent();
 //    }
 
-    @GetMapping
-    @RequestMapping("/agents")
-    public List<AMSAgentDescription> getCustomAgents(){
-        if(!amsAgent.isInitiated())amsAgent.init();
+    @GetMapping("/agent/{localName}")
+    public AMSAgentDescription getAgentById(@PathVariable("localName") String localName){
+        AMSAgentDescription agent = amsAgent.getActiveAgentByLocalName(localName);
+        if (agent == null){
+            agent = new AMSAgentDescription();
+        }
+        return agent;
+    }
+
+    @GetMapping("/agents")
+    public List<AMSAgentDescription> getAgents(){
         return amsAgent.getActiveAgentList(false);
     }
 
-    @GetMapping
-    @RequestMapping("/agents/all")
+    @GetMapping("/agents/all")
     public List<AMSAgentDescription> getAllAgents(){
-        if(!amsAgent.isInitiated())amsAgent.init();
         return amsAgent.getActiveAgentList(true);
     }
+
+    //not working, cycle reference don't know why
+//    @GetMapping("/agents/all2")
+//    public List<Agent> getAllAgents2(){
+//        return agentsManager.getAgentsOnContainer();
+////        return amsAgent.agentsIn
+//    }
+
 
 //    @GetMapping(value = "/{id}")
 //    public Student getStudentById(@PathVariable("id") int id){
