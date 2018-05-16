@@ -104,7 +104,7 @@ public class AgentsManagerOld {
 //                //local name is setted by contained when agent is added to it.
 //                //then, if it hasn't been added yet or has been deleted already we do not call agent.doDelete
 //                //although following API guide it wouldn't have any side effect
-//            } else if (agent.getLocalName() != null && mainContainer.getAgent(agent.getLocalName()) != null) {
+//            } else if (agent.getLocalName() != null && mainContainer.getAgentInstance(agent.getLocalName()) != null) {
 //                agent.doDelete();
 //                deleteAgentFromList(nickname, agent);
 //            } else {
@@ -130,7 +130,7 @@ public class AgentsManagerOld {
 //        System.out.println ("Agent status from agent: " + agent.getState());
 //        if (agent.getLocalName() != null){
 //            try {
-//                AgentController myAgentController = mainContainer.getAgent(agent.getLocalName());
+//                AgentController myAgentController = mainContainer.getAgentInstance(agent.getLocalName());
 //                if (myAgentController != null){
 //                    System.out.println ("Agent " + agent.getLocalName() + " status on container: " + myAgentController.getState());
 //                }else{

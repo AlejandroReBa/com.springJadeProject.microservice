@@ -1,6 +1,7 @@
 package com.springJadeProject.microservice.service.jade.core.agent;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.springJadeProject.microservice.service.jade.core.behaviour.BehaviourWithAgentInterface;
 import com.springJadeProject.microservice.service.jade.core.manager.AgentsManager;
 import jade.core.Agent;
@@ -18,22 +19,17 @@ public abstract class AgentSpring extends Agent implements AgentInterface{
     private List<Behaviour> behaviourList = new ArrayList<>();
 
     @Override
-    protected void setup(){ /*super() must be called first line in overriden setup() from subclasses */
+    protected void setup(){ /**super() must be called first line in overriden setup() from subclasses **/
         for (Behaviour b : behaviourList){
-            System.out.println("-->ATACHING BEHAVIOUR: " + b.getBehaviourName());
-                /*
-                if (b instanceof BehaviourWithAgentInterface){
-                    ((BehaviourWithAgentInterface) b).setNewAgent(getAgent());
-                    System.out.println("-->YES, IT'S INSTANCEOF BehaviourWithAgentInterface: ");
-                }
-                */
+            System.out.println("-->ATTACHING BEHAVIOUR: " + b.getBehaviourName());
             addBehaviour(b);
         }
 
     } //override setup from Agent to force subclasses to implement it
 
-    @Override
-    protected abstract void takeDown();
+    /**not needed to be abstract**/
+//    @Override
+//    protected abstract void takeDown();
 
 
     @Override
@@ -65,7 +61,7 @@ public abstract class AgentSpring extends Agent implements AgentInterface{
             b.reset();
             removeBehaviour(b);
             if (b instanceof BehaviourWithAgentInterface){
-                ((BehaviourWithAgentInterface) b).setNewAgent(newInstance.getAgent());
+                ((BehaviourWithAgentInterface) b).setNewAgent(newInstance.getAgentInstance());
                 //System.out.println("-->YES, IT'S INSTANCEOF BehaviourWithAgentInterface: ");
             }
             newInstance.addBehaviourToAgent(b);
@@ -79,8 +75,11 @@ public abstract class AgentSpring extends Agent implements AgentInterface{
     }
 
 
+    @JsonIgnore //required to avoid an infinity cycle behaviour when Jackson deserialize an AgentSpring
+                //by default using get* named method makes it to consider that we have a property named AgentInterface.
+                //As it would be an Agent instance that refers to itself -> we fall into a loop.
     @Override
-    public Agent getAgent(){
+    public Agent getAgentInstance(){
         return (Agent) this;
     }
 

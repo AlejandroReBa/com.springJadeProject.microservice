@@ -38,7 +38,7 @@ public class SimpleBehaviourSpring extends BehaviourSpring{
 
     public Behaviour addTickerBehaviour(ActionInterface actionInterface, AgentInterface agentInterface, long period) {
 
-        currentBehaviour = new TickerBehaviour(agentInterface.getAgent(), period) {
+        currentBehaviour = new TickerBehaviour(agentInterface.getAgentInstance(), period) {
             @Override
             protected void onTick() {
                 actionInterface.action();
@@ -51,7 +51,7 @@ public class SimpleBehaviourSpring extends BehaviourSpring{
 
     public Behaviour addWakerBehaviour(ActionInterface actionInterface, AgentInterface agentInterface, long timeout) {
 
-        currentBehaviour = new WakerBehaviour(agentInterface.getAgent(), timeout) {
+        currentBehaviour = new WakerBehaviour(agentInterface.getAgentInstance(), timeout) {
             /*old method
             @Override
            protected void handleElapsedTimeout(){
@@ -71,7 +71,7 @@ public class SimpleBehaviourSpring extends BehaviourSpring{
 
     public Behaviour addWakerBehaviour(ActionInterface actionInterface, AgentInterface agentInterface, java.util.Date wakeupDate) {
 
-        currentBehaviour = new WakerBehaviour(agentInterface.getAgent(), wakeupDate) {
+        currentBehaviour = new WakerBehaviour(agentInterface.getAgentInstance(), wakeupDate) {
              /*old method
             @Override
            protected void handleElapsedTimeout(){

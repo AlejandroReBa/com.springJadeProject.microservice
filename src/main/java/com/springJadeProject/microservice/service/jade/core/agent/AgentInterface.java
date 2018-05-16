@@ -1,11 +1,5 @@
 package com.springJadeProject.microservice.service.jade.core.agent;
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 
@@ -22,7 +16,7 @@ public interface AgentInterface {
     //void shutDownAgent(); now  we need to return a new instance
     AgentInterface shutDownAgent();
     void checkAgentStatus();
-    Agent getAgent();
+    Agent getAgentInstance();
     //the user can create it owns jade behaviour if he does not want to use our framework
     //we also use this method to attach behaviour when they are created via BehaviourEJB
     void addBehaviourToAgent(Behaviour behaviour);

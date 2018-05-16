@@ -28,9 +28,10 @@ public class AMSAgent extends AgentSpring implements AgentInterface {
     private static final String DF_LOCAL_NAME = "df";
     private static final String RMA_LOCAL_NAME = "rma";
 
+    //to avoid initiate two instances on @PostConstruct startUp
     private boolean initiated = false;
 
-    public boolean isInitiated (){
+    private boolean isInitiated (){
         return initiated;
     }
 

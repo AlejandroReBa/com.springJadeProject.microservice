@@ -4,7 +4,6 @@ import jade.core.Agent;
 import jade.wrapper.*;
 import jade.core.Runtime;
 import jade.core.ProfileImpl;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -140,12 +139,17 @@ public class AgentsManager {
     }
 
 
+//    //Not sure if it should be here (SOLID principles)
+//    public static List<Agent> getAgentsOnContainer (){
+//        Collection<Agent> agentCollection = agentsOnContainer.values();
+//        Agent AMSAgent = agentsOnContainer.get("AMSAgent");
+//        agentCollection.remove(AMSAgent);
+//        return new ArrayList<>(agentCollection);
+//    }
+
     //Not sure if it should be here (SOLID principles)
-    public List<Agent> getAgentsOnContainer (){
-        Collection<Agent> agentCollection = agentsOnContainer.values();
-        Agent AMSAgent = agentsOnContainer.get("AMSAgent");
-        agentCollection.remove(AMSAgent);
-        return new ArrayList<>(agentCollection);
+    public Map<String,Agent> getAgentsOnContainer (){
+        return agentsOnContainer;
     }
 
 }

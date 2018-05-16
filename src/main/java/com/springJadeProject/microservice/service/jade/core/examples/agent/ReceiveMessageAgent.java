@@ -2,6 +2,7 @@ package com.springJadeProject.microservice.service.jade.core.examples.agent;
 
 import com.springJadeProject.microservice.service.jade.core.agent.AgentInterface;
 import com.springJadeProject.microservice.service.jade.core.agent.AgentSpring;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 /**
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
  */
 //@Stateless @AgentQualifier(type=AgentType.RECEIVE_MESSAGE_AGENT)
 @Service
+@Qualifier("ReceiveMessageAgent")
 public class ReceiveMessageAgent extends AgentSpring implements AgentInterface{
 
     @Override
