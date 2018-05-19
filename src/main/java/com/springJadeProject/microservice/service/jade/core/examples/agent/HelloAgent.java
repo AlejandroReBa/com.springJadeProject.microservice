@@ -24,6 +24,7 @@ public class HelloAgent extends AgentSpring implements AgentInterface {
 
     @Override
     protected void takeDown(){
+        super.takeDown();
         System.out.println("---->HelloAgent: getAID.getName --> " + this.getAID().getName() + " terminating");
         //AgentsManager.deleteAgentFromList(nickname, this);
     }

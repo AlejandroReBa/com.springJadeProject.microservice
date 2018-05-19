@@ -29,28 +29,30 @@ public class AMSAgent extends AgentSpring implements AgentInterface {
     private static final String RMA_LOCAL_NAME = "rma";
 
     //to avoid initiate two instances on @PostConstruct startUp
-    private boolean initiated = false;
-
-    private boolean isInitiated (){
-        return initiated;
-    }
+    //migrated to AgentSpring
+//    private boolean initiated = false;
+//
+//    private boolean isInitiated (){
+//        return initiated;
+//    }
 
     @Override
     protected void setup()
     {
-        initiated = true;
+//        initiated = true; --> migrated to AgentSpring
         super.setup();
         System.out.println("The agent " + getAID().getName() + " has been initiated.");
     }
 
     @Override
     protected void takeDown() {
+        super.takeDown();
         System.out.println("---->AMS Agent: getAID.getName --> " + this.getAID().getName() + " terminating");
     }
 
     @Override
     protected AgentInterface getNewInstance() {
-        initiated  = false;
+//        initiated  = false;
         return new AMSAgent();
     }
 

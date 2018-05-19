@@ -18,18 +18,34 @@ public abstract class AgentSpring extends Agent implements AgentInterface{
     private String nickname = "";
     private List<Behaviour> behaviourList = new ArrayList<>();
 
+//    method to check if this agent is active or not. Useful when from Spring Controller we want
+//    to restart (stop and run again) the agent and JADE Container Manager is the performance is not good enough
+//    when the agent is shut down we return a new instance, and the initiated variable form the 'old' instance
+//    that has been shut down is changed to false. The new one will have initiated as false too.
+
+    private boolean initiated = false;
+    public boolean isInitiated (){
+        return initiated;
+    }
+
+    /**super() must be called first line in overriden setup() from subclasses **/
     @Override
-    protected void setup(){ /**super() must be called first line in overriden setup() from subclasses **/
+    protected void setup(){
         for (Behaviour b : behaviourList){
             System.out.println("-->ATTACHING BEHAVIOUR: " + b.getBehaviourName());
             addBehaviour(b);
         }
 
+        initiated = true;
+
     } //override setup from Agent to force subclasses to implement it
 
     /**not needed to be abstract**/
-//    @Override
-//    protected abstract void takeDown();
+    @Override
+    protected void takeDown(){
+        //so we can check certainly if the agent has been takenDown
+        initiated = false;
+    }//override takeDown from Agent to force subclasses to implement it
 
 
     @Override

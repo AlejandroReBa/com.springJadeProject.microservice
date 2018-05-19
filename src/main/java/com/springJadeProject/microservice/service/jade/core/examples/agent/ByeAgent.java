@@ -24,6 +24,7 @@ public class ByeAgent extends AgentSpring implements AgentInterface {//Agent imp
 
     @Override
     protected void takeDown() {
+        super.takeDown();
         System.out.println("---->ByeAgent: getAID.getName --> " + this.getAID().getName() + " terminating");
     }
 

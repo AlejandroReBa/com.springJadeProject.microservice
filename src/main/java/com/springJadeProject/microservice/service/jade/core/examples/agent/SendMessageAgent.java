@@ -23,6 +23,7 @@ public class SendMessageAgent extends AgentSpring implements AgentInterface {
 
     @Override
     protected void takeDown() {
+        super.takeDown();
         System.out.println("---->SendMessageAgent is on takeDown: terminating");
     }
 

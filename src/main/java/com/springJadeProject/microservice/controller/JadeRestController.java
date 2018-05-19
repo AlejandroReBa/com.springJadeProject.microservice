@@ -1,7 +1,5 @@
 package com.springJadeProject.microservice.controller;
 
-//import com.rest.api.spring.basic.test.v1.model.entity.Student;
-//import com.rest.api.spring.basic.test.v1.service.StudentService;
 import com.springJadeProject.microservice.model.AgentModel.JsonNicknameAgentModel;
 import com.springJadeProject.microservice.model.ResponseMessageModel.APIActionDescription;
 import com.springJadeProject.microservice.model.ResponseMessageModel.ResponseErrorMessage;
@@ -67,17 +65,23 @@ public class JadeRestController {
 
     /**local variables below**/
 //    private List<Agent> availableAgentList;
-    private Map<String,Agent> availableAgentList;
+//    private Map<String,Agent> availableAgentList;
+    private Map<String,AgentInterface> availableAgentList;
     /**local variables above**/
 
     @PostConstruct
     public void startup(){
         /**Add below those agents you have injected above**/
         availableAgentList = new HashMap<>();
-        availableAgentList.put(helloAgent.getNickname(), helloAgent.getAgentInstance());
-        availableAgentList.put(byeAgent.getNickname(), byeAgent.getAgentInstance());
-        availableAgentList.put(receiveMessageAgent.getNickname(), receiveMessageAgent.getAgentInstance());
-        availableAgentList.put(sendMessageAgent.getNickname(), sendMessageAgent.getAgentInstance());
+//        availableAgentList.put(helloAgent.getNickname(), helloAgent.getAgentInstance());
+//        availableAgentList.put(byeAgent.getNickname(), byeAgent.getAgentInstance());
+//        availableAgentList.put(receiveMessageAgent.getNickname(), receiveMessageAgent.getAgentInstance());
+//        availableAgentList.put(sendMessageAgent.getNickname(), sendMessageAgent.getAgentInstance());
+
+        availableAgentList.put(helloAgent.getNickname(), helloAgent);
+        availableAgentList.put(byeAgent.getNickname(), byeAgent);
+        availableAgentList.put(receiveMessageAgent.getNickname(), receiveMessageAgent);
+        availableAgentList.put(sendMessageAgent.getNickname(), sendMessageAgent);
     }
 
     @GetMapping
@@ -126,7 +130,12 @@ public class JadeRestController {
 
     @GetMapping("/agents/available") //agents you can work with. (Agents injected)
     public List<Agent> getAvailableAgents(){
-        return new ArrayList<>(availableAgentList.values());
+//        return new ArrayList<>(availableAgentList.values());
+        List<Agent> availableAgentsListRes = new ArrayList<>();
+        for (AgentInterface agentInterface : availableAgentList.values()){
+            availableAgentsListRes.add(agentInterface.getAgentInstance());
+        }
+        return availableAgentsListRes;
     }
 
     @GetMapping("/agents/available/names") //agents you can work with. (Agents injected)
@@ -136,11 +145,11 @@ public class JadeRestController {
 
     @PostMapping(path="agent/init", consumes=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> initAgent(@RequestBody JsonNicknameAgentModel jsonNicknameAgentModel){
-        Agent agentToInit = availableAgentList.get(jsonNicknameAgentModel.getNickname());
+        AgentInterface agentToInit = availableAgentList.get(jsonNicknameAgentModel.getNickname());
         Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(jsonNicknameAgentModel.getNickname());
         if (agentToInit != null){
            if (agentRunningOnContainer == null){
-               ((AgentSpring) agentToInit).init();
+               ((AgentSpring) agentToInit.getAgentInstance()).init();
                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + jsonNicknameAgentModel.getNickname() + " initiated successfully"));
            }else{
                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + jsonNicknameAgentModel.getNickname() + " was already running. You can't init the same agent twice"));
@@ -152,11 +161,16 @@ public class JadeRestController {
 
     @PostMapping(path="agent/stop", consumes=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> stopAgent(@RequestBody JsonNicknameAgentModel jsonNicknameAgentModel){
-        Agent agentToStop = availableAgentList.get(jsonNicknameAgentModel.getNickname());
+        AgentInterface agentToStop = availableAgentList.get(jsonNicknameAgentModel.getNickname());
         Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(jsonNicknameAgentModel.getNickname());
             if (agentToStop != null){
                 if (agentRunningOnContainer != null){
-                    ((AgentSpring) agentRunningOnContainer).shutDownAgent();
+                    //TODO DELETE HELLO AGENT
+                    AgentInterface newAgentInstance =  ((AgentSpring) agentRunningOnContainer).shutDownAgent();
+                    //add the new instance of this agent to availableAgentList
+                    availableAgentList.put(jsonNicknameAgentModel.getNickname(), newAgentInstance);
+                    //TODO DELETE
+//                    ((AgentSpring) agentRunningOnContainer).shutDownAgent();
                     return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + jsonNicknameAgentModel.getNickname() + " stopped successfully"));
                 }else{
                     return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + jsonNicknameAgentModel.getNickname() + " hasn't been found running in the system"));
@@ -168,12 +182,24 @@ public class JadeRestController {
 
     @PostMapping(path="agent/restart", consumes=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> restartAgent(@RequestBody JsonNicknameAgentModel jsonNicknameAgentModel){
-        Agent agentToStop = availableAgentList.get(jsonNicknameAgentModel.getNickname());
+        AgentInterface agentToRestart = availableAgentList.get(jsonNicknameAgentModel.getNickname());
         Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(jsonNicknameAgentModel.getNickname());
-        if (agentToStop != null){
+        if (agentToRestart != null){
             if (agentRunningOnContainer != null){
-                ((AgentSpring) agentRunningOnContainer).shutDownAgent();
-                ((AgentSpring) agentToStop).init();
+                //TODO DELETE HELLO AGENT
+                AgentInterface newAgentInstance = ((AgentSpring) agentRunningOnContainer).shutDownAgent();
+                //add the new instance of this agent to availableAgentList
+                availableAgentList.put(jsonNicknameAgentModel.getNickname(), newAgentInstance);
+                //((AgentSpring) agentToStop).init();
+                try {
+                while (((AgentSpring) agentRunningOnContainer).isInitiated()){
+                    //waiting until agent be shut down
+                    Thread.sleep(1);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                newAgentInstance.init();
                 return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + jsonNicknameAgentModel.getNickname() + " was restarted successfully"));
             }else{
                 return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + jsonNicknameAgentModel.getNickname() + " hasn't been found running in the system"));

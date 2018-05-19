@@ -1,6 +1,10 @@
 package com.springJadeProject.microservice.service.jade.core.manager;
 
+import jade.core.AID;
 import jade.core.Agent;
+import jade.domain.AMSService;
+import jade.domain.FIPAAgentManagement.AMSAgentDescription;
+import jade.domain.FIPAAgentManagement.SearchConstraints;
 import jade.wrapper.*;
 import jade.core.Runtime;
 import jade.core.ProfileImpl;
@@ -11,8 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
-//import javax.ejb.Startup;
-//import javax.ejb.Singleton;
+
 /**
  *
  * @author Alejandro Reyes
@@ -78,9 +81,32 @@ public class AgentsManager {
     public static void addAgentToMainContainer(String nickname, Agent agent){
         try {
             if (!agentsOnContainer.containsKey(nickname) && agent!=null){
+                //AMSAgent just initiated once, so we do not have this problem.
+                //In the same way we use it to check if a deleted agent via agent.doDelete()
+                //is still in the container (It may happens when we stop and init the same agent in a row)
+//                checkAgentIsNotInContainer(nickname);
+
+//                while (mainContainer.getAgent(nickname) != null){ --> it raises an exception
+//                    //In some specific situations when we stop and init again the same agent at the moment
+//                    //we need to give some time to container to delete de agent. Otherwise a StaleProxyException
+//                    //will be raised
+//                    System.out.println("Waiting to MainContainer. Still deleting the agent we want to init here!");
+//                }
+//                AgentController agentController = null;
+//                int index = 0;
+//                while (agentController == null){
+//                    index++;
+//                    System.out.println("Accepting new agent. Try number: " + index);
+//                    agentController = customAcceptNewAgent(nickname, agent);
+////                    mainContainer.acceptNewAgent(nickname, agent);
+//                }
                 AgentController agentController = mainContainer.acceptNewAgent(nickname, agent);
                 agentsOnContainer.put(nickname, agent);
+
+//                System.out.println ( "222---> " + mainContainer.getAgent(nickname).getState() + " --> " + mainContainer.getAgent(nickname).getName());
+
                 agentController.start();
+
             }else{
                 System.out.println("Agent " + nickname + " is running already");
             }
@@ -91,6 +117,16 @@ public class AgentsManager {
         }
 
     }
+
+//    private static AgentController customAcceptNewAgent(String nickname, Agent agent) {
+//        AgentController agentController = null;
+//        try {
+//            agentController = mainContainer.acceptNewAgent(nickname, agent);
+//        } catch (StaleProxyException e) {
+//            e.printStackTrace();
+//        }
+//        return agentController;
+//    }
 
     public static void takeDownAgent(String nickname, Agent agent) {
         try {
@@ -114,7 +150,7 @@ public class AgentsManager {
 
     private static void deleteAgentFromList(String nickname, Agent agent){
         Agent agentToDelete = agentsOnContainer.get(nickname);
-        if (agentToDelete.equals(agent)){
+        if (agentToDelete != null && agentToDelete.equals(agent)){
             agentsOnContainer.remove(nickname);
         }
     }
@@ -137,6 +173,26 @@ public class AgentsManager {
         }
 
     }
+
+//    private static void checkAgentIsNotInContainer (String nickname){
+//        AMSAgentDescription[] agentDescriptionList = {};
+//        try
+//        {
+//            SearchConstraints restrictions = new SearchConstraints();
+//            restrictions.setMaxResults ( -1L);
+//            //I think new Agent() should be already initiated in the container...
+//            agentDescriptionList = AMSService.search(new Agent(), new AMSAgentDescription(), restrictions);
+//        }
+//        catch (Exception e) { System.out.println(e); }
+//
+//        for (AMSAgentDescription agentDescription : agentDescriptionList) {
+//            if (agentDescription.getName().getLocalName().equals(nickname) {
+//              ///////
+//            }
+//
+//        }
+//
+//    }
 
 
 //    //Not sure if it should be here (SOLID principles)
