@@ -7,7 +7,7 @@ import jade.core.behaviours.Behaviour;
  * @author Alejandro Reyes
  */
 
-public abstract class BehaviourSpring {
+public abstract class SpringBehaviour {
     /**Consumer if it returns nothing -> https://docs.oracle.com/javase/8/docs/api/java/util/function/Consumer.html
      * Supplier if it takes nothing -> https://docs.oracle.com/javase/8/docs/api/java/util/function/Supplier.html
      * Runnable if it does neither -> https://docs.oracle.com/javase/8/docs/api/java/lang/Runnable.html

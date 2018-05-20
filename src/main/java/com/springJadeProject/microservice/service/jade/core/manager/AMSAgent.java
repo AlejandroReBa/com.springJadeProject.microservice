@@ -1,19 +1,16 @@
 package com.springJadeProject.microservice.service.jade.core.manager;
 
 import com.springJadeProject.microservice.service.jade.core.agent.AgentInterface;
-import com.springJadeProject.microservice.service.jade.core.agent.AgentSpring;
+import com.springJadeProject.microservice.service.jade.core.agent.SpringAgent;
 import jade.core.AID;
 import jade.domain.AMSService;
 import jade.domain.FIPAAgentManagement.AMSAgentDescription;
 import jade.domain.FIPAAgentManagement.SearchConstraints;
-import jade.wrapper.ControllerException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -23,13 +20,13 @@ import java.util.logging.Logger;
 
 //@Stateless @AgentQualifier(type=AgentType.AMSAGENT)
 @Service
-public class AMSAgent extends AgentSpring implements AgentInterface {
+public class AMSAgent extends SpringAgent implements AgentInterface {
     private static final String AMS_LOCAL_NAME = "ams";
     private static final String DF_LOCAL_NAME = "df";
     private static final String RMA_LOCAL_NAME = "rma";
 
     //to avoid initiate two instances on @PostConstruct startUp
-    //migrated to AgentSpring
+    //migrated to SpringAgent
 //    private boolean initiated = false;
 //
 //    private boolean isInitiated (){
@@ -39,7 +36,7 @@ public class AMSAgent extends AgentSpring implements AgentInterface {
     @Override
     protected void setup()
     {
-//        initiated = true; --> migrated to AgentSpring
+//        initiated = true; --> migrated to SpringAgent
         super.setup();
         System.out.println("The agent " + getAID().getName() + " has been initiated.");
     }

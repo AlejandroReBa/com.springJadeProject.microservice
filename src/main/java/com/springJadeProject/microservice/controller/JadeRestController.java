@@ -1,6 +1,7 @@
 package com.springJadeProject.microservice.controller;
 
 import com.springJadeProject.microservice.model.AgentModel.JsonNicknameAgentModel;
+import com.springJadeProject.microservice.model.AgentModel.JsonStateAgentModel;
 import com.springJadeProject.microservice.model.ResponseMessageModel.APIActionDescription;
 import com.springJadeProject.microservice.model.ResponseMessageModel.ResponseErrorMessage;
 import com.springJadeProject.microservice.model.ResponseMessageModel.ResponseNotificationMessage;
@@ -8,10 +9,15 @@ import com.springJadeProject.microservice.model.ResponseMessageModel.contract.Re
 import com.springJadeProject.microservice.service.api.APIAgentService;
 import com.springJadeProject.microservice.service.api.APIDescriptionService;
 import com.springJadeProject.microservice.service.jade.core.agent.AgentInterface;
-import com.springJadeProject.microservice.service.jade.core.agent.AgentSpring;
+import com.springJadeProject.microservice.service.jade.core.agent.SpringAgent;
+import com.springJadeProject.microservice.service.jade.core.behaviour.SimpleBehaviourSpring;
+import com.springJadeProject.microservice.service.jade.core.behaviour.SpringBehaviour;
+import com.springJadeProject.microservice.service.jade.core.examples.behaviour.ReceiveACLMessageBlockBehaviour;
+import com.springJadeProject.microservice.service.jade.core.examples.behaviour.SendACLMessageBlockBehaviour;
 import com.springJadeProject.microservice.service.jade.core.manager.AMSAgent;
 import jade.core.Agent;
 import jade.domain.FIPAAgentManagement.AMSAgentDescription;
+import jade.wrapper.ControllerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -34,7 +40,7 @@ public class JadeRestController {
     private AgentInterface helloAgent;
 
     @Autowired
-    @Qualifier("ByeAgent")
+    @Qualifier("SpringAgent")
     private AgentInterface byeAgent;
 
     @Autowired
@@ -44,11 +50,27 @@ public class JadeRestController {
     @Autowired
     @Qualifier("SendMessageAgent")
     private AgentInterface sendMessageAgent;
-
     /**Inject your agents via @Autowired above*/
 
-    /**Injections required by the framework below**/
 
+    /**Inject your behaviors via @Autowired below**/
+    @Autowired
+    @Qualifier("SimpleBehaviourSpring")
+    private SimpleBehaviourSpring simpleBehaviourSpring;
+
+    @Autowired
+    @Qualifier("ReceiveACLMessage")
+    ReceiveACLMessageBlockBehaviour receiveACLMessageBlockBehaviour;
+
+    @Autowired
+    @Qualifier("SendACLMessage")
+    SendACLMessageBlockBehaviour sendACLMessageBlockBehaviour;
+
+
+    /**Inject your behaviors via @Autowired above**/
+
+
+    /**Injections required by the framework below**/
     @Autowired
     private APIAgentService apiAgentService;
 
@@ -72,16 +94,31 @@ public class JadeRestController {
     @PostConstruct
     public void startup(){
         /**Add below those agents you have injected above**/
+        //add agents to availableAgentList
         availableAgentList = new HashMap<>();
-//        availableAgentList.put(helloAgent.getNickname(), helloAgent.getAgentInstance());
-//        availableAgentList.put(byeAgent.getNickname(), byeAgent.getAgentInstance());
-//        availableAgentList.put(receiveMessageAgent.getNickname(), receiveMessageAgent.getAgentInstance());
-//        availableAgentList.put(sendMessageAgent.getNickname(), sendMessageAgent.getAgentInstance());
-
         availableAgentList.put(helloAgent.getNickname(), helloAgent);
         availableAgentList.put(byeAgent.getNickname(), byeAgent);
         availableAgentList.put(receiveMessageAgent.getNickname(), receiveMessageAgent);
         availableAgentList.put(sendMessageAgent.getNickname(), sendMessageAgent);
+
+        /**create and bound behaviours to agents below**/
+        //example of behaviour created and set from controller using simpleBehaviourSpring (a factory class)
+        SpringBehaviour.ActionInterface actionInterface =
+                () -> System.out.println("injecting behaviour and setting one shot");
+
+        simpleBehaviourSpring.addOneShotBehaviour(actionInterface, helloAgent);
+//        simpleBehaviourSpring.addCyclicBehaviour(actionInterface, helloAgent);
+
+        //example of behaviour template created in examples; you only need to attach the agent to the behaviour
+        //on SendACLMessageBlockBehaviour you also need to attach the receiver name
+        //Do I need to inject it actually? getInstance..is static method
+        ReceiveACLMessageBlockBehaviour receiveBehaviour = receiveACLMessageBlockBehaviour.getInstance(receiveMessageAgent.getAgentInstance());
+        receiveMessageAgent.addBehaviourToAgent(receiveBehaviour);
+
+        SendACLMessageBlockBehaviour sendBehaviour = sendACLMessageBlockBehaviour.getInstance(sendMessageAgent.getAgentInstance());
+        sendBehaviour.setReceiverLocalName(receiveMessageAgent.getNickname());
+        sendBehaviour.setLanguage("Spanish");
+        sendMessageAgent.addBehaviourToAgent(sendBehaviour);
     }
 
     @GetMapping
@@ -95,17 +132,38 @@ public class JadeRestController {
     }
 
     @GetMapping("/agent/{localName}")
-    public Agent getAgentById(@PathVariable("localName") String localName){
+    public Agent getAgentByLocalName(@PathVariable("localName") String localName){
         return apiAgentService.findActiveAgentByLocalName(localName);
     }
 
     @GetMapping("/agent/description/{localName}")
-    public AMSAgentDescription getAgentDescriptionById(@PathVariable("localName") String localName){
+    public AMSAgentDescription getAgentDescriptionByLocalName(@PathVariable("localName") String localName){
         AMSAgentDescription agentDescription = amsAgent.getActiveAgentByLocalName(localName);
         if (agentDescription == null){
             agentDescription = new AMSAgentDescription();
         }
         return agentDescription;
+    }
+
+    @GetMapping("/agent/state/{localName}")
+    public ResponseEntity<?> getAgentDescriptionById(@PathVariable("localName") String localName){
+        try {
+        AgentInterface agentToCheck = availableAgentList.get(localName);
+        Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(localName);
+        if (agentToCheck != null){
+            if (agentRunningOnContainer != null){
+                String state = ((SpringAgent)agentRunningOnContainer).getContainerController().getAgent(localName).getState().toString();
+                return ResponseEntity.ok(new JsonStateAgentModel(state));
+            }else{
+                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + localName + " hasn't been found running in the system"));
+            }
+        }else{
+            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + localName + " doesn't exist in the system"));
+        }
+        } catch (ControllerException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(new ResponseErrorMessage("Seems to have been a problem. Try again later."));
+        }
     }
 
     @GetMapping("/agents")
@@ -129,13 +187,13 @@ public class JadeRestController {
     }
 
     @GetMapping("/agents/available") //agents you can work with. (Agents injected)
-    public List<Agent> getAvailableAgents(){
-//        return new ArrayList<>(availableAgentList.values());
-        List<Agent> availableAgentsListRes = new ArrayList<>();
-        for (AgentInterface agentInterface : availableAgentList.values()){
-            availableAgentsListRes.add(agentInterface.getAgentInstance());
-        }
-        return availableAgentsListRes;
+    public List<AgentInterface> getAvailableAgents(){
+        return new ArrayList<>(availableAgentList.values());
+//        List<Agent> availableAgentsListRes = new ArrayList<>();
+//        for (AgentInterface agentInterface : availableAgentList.values()){
+//            availableAgentsListRes.add(agentInterface.getAgentInstance());
+//        }
+//        return availableAgentsListRes;
     }
 
     @GetMapping("/agents/available/names") //agents you can work with. (Agents injected)
@@ -149,11 +207,13 @@ public class JadeRestController {
         Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(jsonNicknameAgentModel.getNickname());
         if (agentToInit != null){
            if (agentRunningOnContainer == null){
-               ((AgentSpring) agentToInit.getAgentInstance()).init();
+               ((SpringAgent) agentToInit.getAgentInstance()).init();
                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + jsonNicknameAgentModel.getNickname() + " initiated successfully"));
            }else{
                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + jsonNicknameAgentModel.getNickname() + " was already running. You can't init the same agent twice"));
            }
+        }else if (jsonNicknameAgentModel.getNickname() == null){
+            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'nickname':'<your agent nickname>'} is required"));
         }else{
             return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + jsonNicknameAgentModel.getNickname() + " doesn't exist in the system"));
         }
@@ -165,16 +225,15 @@ public class JadeRestController {
         Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(jsonNicknameAgentModel.getNickname());
             if (agentToStop != null){
                 if (agentRunningOnContainer != null){
-                    //TODO DELETE HELLO AGENT
-                    AgentInterface newAgentInstance =  ((AgentSpring) agentRunningOnContainer).shutDownAgent();
+                    AgentInterface newAgentInstance =  ((SpringAgent) agentRunningOnContainer).shutDownAgent();
                     //add the new instance of this agent to availableAgentList
                     availableAgentList.put(jsonNicknameAgentModel.getNickname(), newAgentInstance);
-                    //TODO DELETE
-//                    ((AgentSpring) agentRunningOnContainer).shutDownAgent();
                     return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + jsonNicknameAgentModel.getNickname() + " stopped successfully"));
                 }else{
                     return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + jsonNicknameAgentModel.getNickname() + " hasn't been found running in the system"));
                 }
+            }else if (jsonNicknameAgentModel.getNickname() == null){
+                return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'nickname':'<your agent nickname>'} is required"));
             }else{
                 return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + jsonNicknameAgentModel.getNickname() + " doesn't exist in the system"));
             }
@@ -186,13 +245,11 @@ public class JadeRestController {
         Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(jsonNicknameAgentModel.getNickname());
         if (agentToRestart != null){
             if (agentRunningOnContainer != null){
-                //TODO DELETE HELLO AGENT
-                AgentInterface newAgentInstance = ((AgentSpring) agentRunningOnContainer).shutDownAgent();
+                AgentInterface newAgentInstance = ((SpringAgent) agentRunningOnContainer).shutDownAgent();
                 //add the new instance of this agent to availableAgentList
                 availableAgentList.put(jsonNicknameAgentModel.getNickname(), newAgentInstance);
-                //((AgentSpring) agentToStop).init();
                 try {
-                while (((AgentSpring) agentRunningOnContainer).isInitiated()){
+                while (((SpringAgent) agentRunningOnContainer).isInitiated()){
                     //waiting until agent be shut down
                     Thread.sleep(1);
                     }
@@ -204,6 +261,8 @@ public class JadeRestController {
             }else{
                 return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + jsonNicknameAgentModel.getNickname() + " hasn't been found running in the system"));
             }
+        }else if (jsonNicknameAgentModel.getNickname() == null){
+            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'nickname':'<your agent nickname>'} is required"));
         }else{
             return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + jsonNicknameAgentModel.getNickname() + " doesn't exist in the system"));
         }

@@ -1,7 +1,7 @@
 package com.springJadeProject.microservice.service.jade.core.examples.agent;
 
 import com.springJadeProject.microservice.service.jade.core.agent.AgentInterface;
-import com.springJadeProject.microservice.service.jade.core.agent.AgentSpring;
+import com.springJadeProject.microservice.service.jade.core.agent.SpringAgent;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -12,8 +12,8 @@ import org.springframework.stereotype.Service;
 
 //@Stateless @AgentQualifier(type=AgentType.BYEAGENT)
 @Service
-@Qualifier("ByeAgent")
-public class ByeAgent extends AgentSpring implements AgentInterface {//Agent implements AgentInterface{
+@Qualifier("SpringAgent")
+public class ByeAgent extends SpringAgent implements AgentInterface {//Agent implements AgentInterface{
 
     @Override
     protected void setup() {
@@ -25,7 +25,7 @@ public class ByeAgent extends AgentSpring implements AgentInterface {//Agent imp
     @Override
     protected void takeDown() {
         super.takeDown();
-        System.out.println("---->ByeAgent: getAID.getName --> " + this.getAID().getName() + " terminating");
+        System.out.println("---->SpringAgent: getAID.getName --> " + this.getAID().getName() + " terminating");
     }
 
     @Override

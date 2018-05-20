@@ -2,6 +2,8 @@ package com.springJadeProject.microservice.service.jade.core.behaviour;
 
 import com.springJadeProject.microservice.service.jade.core.agent.AgentInterface;
 import jade.core.behaviours.*;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Service;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -9,9 +11,14 @@ import java.util.function.Function;
 /**
  *
  * @author Alejandro Reyes
+ *
+ * This is a factory class to create custom behaviours in an easy way if you are new into JADE
+ * Only very simple behaviours can be implemented this way.
  */
-//@Stateless @SimpleBehaviourQualifier
-public class SimpleBehaviourSpring extends BehaviourSpring{
+
+@Service
+@Qualifier("SimpleBehaviourSpring")
+public class SimpleBehaviourSpring extends SpringBehaviour {
     public void addOneShotBehaviour(ActionInterface actionInterface, AgentInterface agentInterface) {
         currentBehaviour = new OneShotBehaviour() {
             @Override

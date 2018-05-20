@@ -14,7 +14,7 @@ import java.util.List;
  * @author Alejandro Reyes
  */
 
-public abstract class AgentSpring extends Agent implements AgentInterface{
+public abstract class SpringAgent extends Agent implements AgentInterface{
     private String nickname = "";
     private List<Behaviour> behaviourList = new ArrayList<>();
 
@@ -91,7 +91,7 @@ public abstract class AgentSpring extends Agent implements AgentInterface{
     }
 
 
-    @JsonIgnore //required to avoid an infinity cycle behaviour when Jackson deserialize an AgentSpring
+    @JsonIgnore //required to avoid an infinity cycle behaviour when Jackson deserialize an SpringAgent
                 //by default using get* named method makes it to consider that we have a property named AgentInterface.
                 //As it would be an Agent instance that refers to itself -> we fall into a loop.
     @Override
