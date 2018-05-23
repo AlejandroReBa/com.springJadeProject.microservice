@@ -107,5 +107,14 @@ public class SendACLMessageBlockBehaviour extends SimpleBehaviour implements Beh
         agent = agentIn;
     }
 
+    @Override
+    public String getAgentLocalName() {
+        String res = null;
+        if (agent != null){
+            res = agent.getLocalName();
+        }
+        return res;
+    }
+
 
 }

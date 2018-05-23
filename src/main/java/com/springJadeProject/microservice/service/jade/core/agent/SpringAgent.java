@@ -118,7 +118,12 @@ public abstract class SpringAgent extends Agent implements AgentInterface{
             behaviourList.remove(behaviour);
             this.removeBehaviour(behaviour);
         }
+    }
 
+
+    @JsonIgnore
+    public List<Behaviour> getBehavioursFromAgent(){
+        return behaviourList;
     }
 
     @Override

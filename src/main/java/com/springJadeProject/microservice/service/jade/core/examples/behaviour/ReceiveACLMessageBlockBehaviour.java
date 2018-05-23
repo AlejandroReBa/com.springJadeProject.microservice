@@ -75,4 +75,13 @@ public class ReceiveACLMessageBlockBehaviour extends SimpleBehaviour implements 
         agent = agentIn;
     }
 
+    @Override
+    public String getAgentLocalName() {
+        String res = null;
+        if (agent != null){
+            res = agent.getLocalName();
+        }
+        return res;
+    }
+
 }

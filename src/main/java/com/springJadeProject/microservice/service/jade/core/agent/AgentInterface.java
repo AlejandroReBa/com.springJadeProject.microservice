@@ -3,6 +3,8 @@ package com.springJadeProject.microservice.service.jade.core.agent;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 
+import java.util.List;
+
 /**
  *
  * @author Alejandro Reyes
@@ -18,13 +20,15 @@ public interface AgentInterface {
     void checkAgentStatus();
     Agent getAgentInstance();
     //the user can create it owns jade behaviour if he does not want to use our framework
-    //we also use this method to attach behaviour when they are created via BehaviourEJB
+    //we also use this method to attach behaviour when they are created via SpringBehaviour
     void addBehaviourToAgent(Behaviour behaviour);
     void removeBehaviourFromAgent (Behaviour behaviour);
     void removeBehaviourFromAgentForEver (Behaviour behaviour);
+    List<Behaviour> getBehavioursFromAgent();
 
     void setNickname(String nickname);
     String getNickname();
+
 
     /** ChangeStateTo INITIATED from DELETED it's not possible, so if we want to use this
      * agent again it already have DELETED (4) as state. Won't be initiated when adding it
