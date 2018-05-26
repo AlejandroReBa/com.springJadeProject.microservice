@@ -6,6 +6,9 @@ import com.springJadeProject.microservice.service.jade.core.behaviour.BehaviourW
 import com.springJadeProject.microservice.service.jade.core.manager.AgentsManager;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
+import jade.core.behaviours.OneShotBehaviour;
+import org.springframework.lang.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,8 +77,8 @@ public abstract class SpringAgent extends Agent implements AgentInterface{
         AgentsManager.takeDownAgent(nickname, this);
         AgentInterface newInstance = getNewInstance();
         for (Behaviour b : behaviourList){
-            b.reset();
             removeBehaviour(b);
+            b.reset();
             if (b instanceof BehaviourWithAgentInterface){
                 ((BehaviourWithAgentInterface) b).setNewAgent(newInstance.getAgentInstance());
                 //System.out.println("-->YES, IT'S INSTANCEOF BehaviourWithAgentInterface: ");
@@ -101,25 +104,62 @@ public abstract class SpringAgent extends Agent implements AgentInterface{
 
 
     @Override
-    public void addBehaviourToAgent(Behaviour behaviour){
-        behaviourList.add(behaviour);
+    public boolean addBehaviourToAgent(Behaviour behaviour){
+        boolean isBehaviourAdded = false;
+        if (behaviour != null && !checkBehaviourExists(behaviour)) {
+            behaviourList.add(behaviour);
+            isBehaviourAdded = true;
+        }
+        return isBehaviourAdded;
+    }
+
+    @Override
+    public boolean addBehaviourToAgentAndInit(Behaviour behaviour){
+        boolean isBehaviourAdded = this.addBehaviourToAgent(behaviour);
+        if (isBehaviourAdded && isInitiated()){
+            addBehaviour(behaviour);
+        }
+        return isBehaviourAdded;
+    }
+
+    //reset the exact behaviour instance
+    @Override
+    public boolean resetBehaviour (Behaviour behaviour){
+        boolean isBehaviourReset = false;
+        if (behaviour != null && behaviourList.contains(behaviour)){
+            if (behaviour instanceof OneShotBehaviour){ //done() method always return true and reset() don't reset it actually
+                removeBehaviour(behaviour);
+                addBehaviour(behaviour);
+            }else{
+                behaviour.reset();
+            }
+
+            isBehaviourReset = true;
+        }
+        return isBehaviourReset;
+    }
+
+    //reset the behaviour instance with behaviourName
+    @Override
+    public boolean resetBehaviourByName (String behaviourName){
+        Behaviour behaviour = getBehaviourByName(behaviourName);
+        return resetBehaviour(behaviour);
     }
 
     @Override
     public void removeBehaviourFromAgent(Behaviour behaviour){
-        if(behaviourList.contains(behaviour)){
+        if(behaviour != null && behaviourList.contains(behaviour)){
             this.removeBehaviour(behaviour);
         }
     }
 
     @Override
     public void removeBehaviourFromAgentForEver(Behaviour behaviour){
-        if (behaviourList.contains(behaviour)){
+        if (behaviour != null && behaviourList.contains(behaviour)){
             behaviourList.remove(behaviour);
             this.removeBehaviour(behaviour);
         }
     }
-
 
     @JsonIgnore
     public List<Behaviour> getBehavioursFromAgent(){
@@ -140,6 +180,50 @@ public abstract class SpringAgent extends Agent implements AgentInterface{
         return res;
     }
 
+    //check if an instance with the same behaviourName exists, not the exact instance
+    private boolean checkBehaviourExists(Behaviour behaviour) {
+        boolean behaviourExists = false;
+        if (behaviour != null) {
+            behaviourExists = checkBehaviourExistsByName(behaviour.getBehaviourName());
+        }
+        return behaviourExists;
+    }
+
+
+    private boolean checkBehaviourExistsByName(String behaviourName){
+        boolean behaviourExists = false;
+        int index = 0;
+        String behaviourNameInList;
+
+        if (behaviourName != null){
+            while (!behaviourExists && index < behaviourList.size()){
+                behaviourNameInList = behaviourList.get(index).getBehaviourName();
+                if (behaviourNameInList != null && behaviourName.equals(behaviourNameInList)){
+                    behaviourExists = true;
+                }
+                index++;
+            }
+        }
+        return behaviourExists;
+    }
+
+
+    private Behaviour getBehaviourByName(String behaviourName){
+        Behaviour behaviourFound = null;
+        int index = 0;
+        String behaviourNameInList;
+
+        if (behaviourName != null){
+            while (behaviourFound == null && index < behaviourList.size()){
+                behaviourNameInList = behaviourList.get(index).getBehaviourName();
+                if (behaviourNameInList != null && behaviourName.equals(behaviourNameInList)){
+                    behaviourFound = behaviourList.get(index);
+                }
+                index++;
+            }
+        }
+        return behaviourFound;
+    }
 
     /** ChangeStateTo INITIATED from DELETED it's not possible, so if we want to use this
      * agent again it already have DELETED (4) as state. Won't be initiated when adding it

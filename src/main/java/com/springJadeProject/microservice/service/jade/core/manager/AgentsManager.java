@@ -101,12 +101,13 @@ public class AgentsManager {
 ////                    mainContainer.acceptNewAgent(nickname, agent);
 //                }
                 AgentController agentController = mainContainer.acceptNewAgent(nickname, agent);
-                agentsOnContainer.put(nickname, agent);
 
 //                System.out.println ( "222---> " + mainContainer.getAgent(nickname).getState() + " --> " + mainContainer.getAgent(nickname).getName());
 
                 agentController.start();
-
+                //add agents to container after it is started, just in case it fails, so we do not fall in an error state
+                //where agent is not initiated and it is already added to the list
+                agentsOnContainer.put(nickname, agent);
             }else{
                 System.out.println("Agent " + nickname + " is running already");
             }
@@ -143,6 +144,7 @@ public class AgentsManager {
             }
 
         } catch (ControllerException ex) {
+            System.out.println ("Exception taking down the agent " + nickname);
             Logger.getLogger(AgentsManager.class.getName()).log(Level.SEVERE, null, ex);
         }
     }

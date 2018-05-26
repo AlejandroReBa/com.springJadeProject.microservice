@@ -1,21 +1,31 @@
 package com.springJadeProject.microservice.model.AgentModel;
 
 public class JsonStateAgentModel {
-    private String state;
+    private String name;
+    private int code;
 
-    public JsonStateAgentModel(String state) {
-        this.state = state;
+    public JsonStateAgentModel(String name, int value) {
+        this.name = name;
+        this.code = value;
     }
 
     public JsonStateAgentModel() {
     }
 
-    public String getState() {
-        return state;
+    public String getName() {
+        return name;
     }
 
-    public void setState(String state) {
-        this.state = state;
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getCode() {
+        return code;
+    }
+
+    public void setCode(int code) {
+        this.code = code;
     }
 }
 

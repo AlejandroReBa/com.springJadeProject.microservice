@@ -21,15 +21,5 @@ public abstract class SpringBehaviour {
         void action();
     }
 
-//    /*useful to know which agent is bounded to the behaviour*/
-//    public String getAgentLocalName(){
-//        String result = null;
-//        Agent agent = currentBehaviour.getAgent();
-//        if (agent != null){
-//            result = agent.getLocalName();
-//        }
-//        return result;
-//    }
-
     //https://www.javabrahman.com/java-8/java-8-java-util-function-function-tutorial-with-examples/
 }

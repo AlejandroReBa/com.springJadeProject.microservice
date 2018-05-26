@@ -1,7 +1,10 @@
 package com.springJadeProject.microservice.service.jade.core.examples.behaviour;
 
+import com.springJadeProject.microservice.service.jade.core.agent.SpringJadeAgentException;
 import com.springJadeProject.microservice.service.jade.core.behaviour.BehaviourWithAgentInterface;
+import com.springJadeProject.microservice.service.jade.core.behaviour.BehaviourWithFactoryInterface;
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.SimpleBehaviour;
 import jade.lang.acl.ACLMessage;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -14,18 +17,32 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Qualifier("ReceiveACLMessage")
-public class ReceiveACLMessageBlockBehaviour extends SimpleBehaviour implements BehaviourWithAgentInterface {
+public class ReceiveACLMessageBlockBehaviour extends SimpleBehaviour implements BehaviourWithAgentInterface, BehaviourWithFactoryInterface {
 
-    private boolean fin = false;
+    private boolean finished = false;
     private Agent agent;
     private String content = "It's all good thanks";
 
-    public static ReceiveACLMessageBlockBehaviour getInstance (Agent myAgentIn){
+//    public static ReceiveACLMessageBlockBehaviour getInstance (Agent myAgentIn){
+//        if(myAgentIn == null){
+//            return null;
+//        }else{
+//            return new ReceiveACLMessageBlockBehaviour(myAgentIn);
+//        }
+//    }
+
+    @Override
+    public Behaviour getInstance (Agent myAgentIn){
         if(myAgentIn == null){
-            return null;
+            return getInstance();
         }else{
             return new ReceiveACLMessageBlockBehaviour(myAgentIn);
         }
+    }
+
+    @Override
+    public Behaviour getInstance() {
+        return new ReceiveACLMessageBlockBehaviour();
     }
 
     private ReceiveACLMessageBlockBehaviour(Agent myAgentIn){
@@ -40,8 +57,12 @@ public class ReceiveACLMessageBlockBehaviour extends SimpleBehaviour implements 
 
     @Override
     public void action() {
-        fin = false;
-        if (agent != null) {
+        if (agent == null){
+            throw new SpringJadeAgentException("Action method from behaviour " + this.getClass().getSimpleName() +
+                    " failed because agent reference is null. There are some operations as SendACLMessage that need an agent.");
+        }else {
+//            finished = false;
+            System.out.println ("Action in ReceiveMesageBehaviour is running -> I will try to receive a new message");
             ACLMessage msg = agent.receive();
 
             if (msg != null) {
@@ -52,21 +73,19 @@ public class ReceiveACLMessageBlockBehaviour extends SimpleBehaviour implements 
                 reply.setContent(content);
                 agent.send(reply);
                 System.out.println(agent.getLocalName() + ": sending an answer");
-                fin = true;
+                finished = true;
             } else {
                 System.out.println("Waiting for the message");
                 System.out.println("Agent who is waiting is: " + agent.getAMS());
                 block(); //only block this behaviour until you receive a msg or a explicit wake up
             }
-
         }
-
     }
 
 
     @Override
     public boolean done() {
-        return fin;
+        return finished;
     }
 
 
@@ -82,6 +101,12 @@ public class ReceiveACLMessageBlockBehaviour extends SimpleBehaviour implements 
             res = agent.getLocalName();
         }
         return res;
+    }
+
+    @Override
+    public void reset() {
+        super.reset();
+        this.finished = false;
     }
 
 }

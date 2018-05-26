@@ -69,8 +69,6 @@ public class APIAgentService {
         return this.getBehavioursNameFromAgentWithStateByLocalName(localName, Behaviour.STATE_RUNNING);
     }
 
-
-
     private List<Behaviour> getBehavioursFromAgentByLocalName(String localName){
         List<Behaviour> result = new ArrayList<>();
         Agent agent = findActiveAgentByLocalName(localName);

@@ -21,7 +21,12 @@ public interface AgentInterface {
     Agent getAgentInstance();
     //the user can create it owns jade behaviour if he does not want to use our framework
     //we also use this method to attach behaviour when they are created via SpringBehaviour
-    void addBehaviourToAgent(Behaviour behaviour);
+    boolean addBehaviourToAgent(Behaviour behaviour);
+    //addBehaviourToAgentAndInit is used to add a behaviour to an Agent that is already running and we want
+    //to execute it in the current execution instead of waiting to the next restart
+    boolean addBehaviourToAgentAndInit(Behaviour behaviour);
+    boolean resetBehaviour(Behaviour behaviour);
+    boolean resetBehaviourByName(String behaviourName);
     void removeBehaviourFromAgent (Behaviour behaviour);
     void removeBehaviourFromAgentForEver (Behaviour behaviour);
     List<Behaviour> getBehavioursFromAgent();
