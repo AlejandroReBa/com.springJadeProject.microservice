@@ -7,7 +7,6 @@ import com.springJadeProject.microservice.service.jade.core.manager.AgentsManage
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.OneShotBehaviour;
-import org.springframework.lang.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,16 +123,14 @@ public abstract class SpringAgent extends Agent implements AgentInterface{
 
     //reset the exact behaviour instance
     @Override
-    public boolean resetBehaviour (Behaviour behaviour){
+    public boolean resetBehaviourFromAgent(Behaviour behaviour){
         boolean isBehaviourReset = false;
         if (behaviour != null && behaviourList.contains(behaviour)){
+            behaviour.reset();
             if (behaviour instanceof OneShotBehaviour){ //done() method always return true and reset() don't reset it actually
                 removeBehaviour(behaviour);
                 addBehaviour(behaviour);
-            }else{
-                behaviour.reset();
             }
-
             isBehaviourReset = true;
         }
         return isBehaviourReset;
@@ -141,24 +138,30 @@ public abstract class SpringAgent extends Agent implements AgentInterface{
 
     //reset the behaviour instance with behaviourName
     @Override
-    public boolean resetBehaviourByName (String behaviourName){
+    public boolean resetBehaviourFromAgentByName(String behaviourName){
         Behaviour behaviour = getBehaviourByName(behaviourName);
-        return resetBehaviour(behaviour);
+        return resetBehaviourFromAgent(behaviour);
     }
 
     @Override
-    public void removeBehaviourFromAgent(Behaviour behaviour){
+    public boolean removeBehaviourFromAgent(Behaviour behaviour){
+        boolean isBehaviourRemoved = false;
         if(behaviour != null && behaviourList.contains(behaviour)){
             this.removeBehaviour(behaviour);
+            isBehaviourRemoved = true;
         }
+
+        return isBehaviourRemoved;
     }
 
     @Override
-    public void removeBehaviourFromAgentForEver(Behaviour behaviour){
-        if (behaviour != null && behaviourList.contains(behaviour)){
+    public boolean removeBehaviourFromAgentForever(Behaviour behaviour){
+        boolean isBehaviourRemoved = removeBehaviourFromAgent(behaviour);
+        if (isBehaviourRemoved){
             behaviourList.remove(behaviour);
-            this.removeBehaviour(behaviour);
         }
+
+        return isBehaviourRemoved;
     }
 
     @JsonIgnore

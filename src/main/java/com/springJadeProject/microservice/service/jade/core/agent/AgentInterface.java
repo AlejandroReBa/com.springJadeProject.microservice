@@ -25,10 +25,10 @@ public interface AgentInterface {
     //addBehaviourToAgentAndInit is used to add a behaviour to an Agent that is already running and we want
     //to execute it in the current execution instead of waiting to the next restart
     boolean addBehaviourToAgentAndInit(Behaviour behaviour);
-    boolean resetBehaviour(Behaviour behaviour);
-    boolean resetBehaviourByName(String behaviourName);
-    void removeBehaviourFromAgent (Behaviour behaviour);
-    void removeBehaviourFromAgentForEver (Behaviour behaviour);
+    boolean resetBehaviourFromAgent(Behaviour behaviour);
+    boolean resetBehaviourFromAgentByName(String behaviourName);
+    boolean removeBehaviourFromAgent (Behaviour behaviour);
+    boolean removeBehaviourFromAgentForever (Behaviour behaviour);
     List<Behaviour> getBehavioursFromAgent();
 
     void setNickname(String nickname);
