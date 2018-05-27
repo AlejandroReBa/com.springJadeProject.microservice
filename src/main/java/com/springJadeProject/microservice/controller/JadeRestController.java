@@ -62,14 +62,6 @@ public class JadeRestController {
     @Qualifier("SimpleBehaviourSpring")
     private SimpleBehaviourSpring simpleBehaviourSpring;
 
-//    @Autowired
-//    @Qualifier("ReceiveACLMessage")
-//    ReceiveACLMessageBlockBehaviour receiveACLMessageBlockBehaviour;
-//
-//    @Autowired
-//    @Qualifier("SendACLMessage")
-//    SendACLMessageBlockBehaviour sendACLMessageBlockBehaviour;
-
     @Autowired
     @Qualifier("ReceiveACLMessage")
     ReceiveACLMessageBlockBehaviour receiveACLMessageBlockBehaviour;
@@ -165,7 +157,7 @@ public class JadeRestController {
 
     @GetMapping("/agent")
     public ResponseMessageInterface getAgentFrontpage(){
-        return new ResponseNotificationMessage("use /api/agent/{id} to get your agent data. Use /api/agents to get all active agents");
+        return new ResponseNotificationMessage("go to /api to see the API description. Use /api/agent/{id} to get your agent data. Use /api/agents to get all active agents");
     }
 
     @GetMapping("/agent/{localName}")
@@ -581,8 +573,6 @@ public class JadeRestController {
             while (behaviourFound == null && index < behaviourList.size()){
                 behaviourNameInList = behaviourList.get(index).getBehaviourName();
                 agentInList = behaviourList.get(index).getAgent();
-                System.out.println("-->AGENTS IN LIST: agent is: " + agent + " and agent inside getBehaviourByNameAndAgent is: " + agentInList);
-                System.out.println("-->AGENTS IN LIST: behaviourName is: " + behaviourName + " and behaviourName inside getBehaviourByNameAndAgent is: " + behaviourNameInList);
                 if (behaviourNameInList != null && behaviourName.equals(behaviourNameInList) && agent.equals(agentInList)){
                     behaviourFound = behaviourList.get(index);
                 }else{

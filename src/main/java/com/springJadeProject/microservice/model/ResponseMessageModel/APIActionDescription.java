@@ -4,6 +4,8 @@ public class APIActionDescription {
     private String path;
     private String method;
     private String description;
+    private String parameters;
+    private String result;
 
     public String getPath() {
         return path;
@@ -29,9 +31,34 @@ public class APIActionDescription {
         this.description = description;
     }
 
+    public String getParameters() {
+        return parameters;
+    }
+
+    public void setParameters(String parameters) {
+        this.parameters = parameters;
+    }
+
+    public String getResult() {
+        return result;
+    }
+
+    public void setResult(String result) {
+        this.result = result;
+    }
+
     public APIActionDescription(String path, String method, String description) {
         this.path = path;
         this.method = method;
         this.description = description;
+    }
+
+    public APIActionDescription(String path, String method, String description, String parameters, String result) {
+        this.path = path;
+        this.method = method;
+        this.description = description;
+        this.parameters = parameters;
+        this.result = result;
+
     }
 }
