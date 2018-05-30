@@ -1,6 +1,7 @@
 /api;GET;api specification;-;api specification
 /api/agent/{localName};GET;get information of the specified agent running in the Jade Container;-;An agent
-/api/agent/available/{localName};GET;get information of the specified agent (if it is completely managed by the API) even if it is not running in the container;-;An agent
+/api/agent/available/{className};GET;get information of the specified agent class (if it is completely managed by the API). You can create instances of this agent class;-;An agent
+/api/agent/created/{localName};GET;get information of the specified agent (if it is completely managed by the API) even if it is not running in the container;-;An agent
 /api/agent/description/{localName};GET;get a container description of the specified agent running in the Jade Container;-;An AMSAgentDescription
 /api/agent/state/{localName};GET;get the state of the specified agent running in the Jade Container;-;{name,code}. Values can be {Initiated,1}, {Active,2}, {Idle,3}, {Suspended,4}, {Waiting,5}, {Deleted,6} or {Transit,7}
 /api/agent/available/state/{localName};GET;get the state of the specified agent (if it is completely managed by the API) even if it is not running in the container;-;{name,code}
@@ -8,8 +9,10 @@
 /api/agents/names;GET;collect the names of every agent running in the Jade Container;-;List of names
 /api/agents/description;GET;get a container description of every agent running in the Jade Container;-;List of AMSAgentDescription
 /api/agents/all/description;GET;get a container description of every agent running in the Jade Container, including the own run by the Jade Platform;-;List of AMSAgentDescription
-/api/agents/available;GET;get information of every agent you can manage via API;-;List of agents
-/api/agents/available/names;GET;get names of every agent you can manage via API;-;List of names
+/api/agents/available;GET;get information of every agent you can use to create agent instances via API;-;List of agents
+/api/agents/available/names;GET;get names of every agent you can use to create agent instances via API;-;List of names
+/api/agents/created;GET;get information of every created agent you can manage via API;-;List of agents
+/api/agents/created/names;GET;get names of every created agent you can manage via API;-;List of names
 /api/agent/available/behaviours/{localName};GET;get information of all behaviours attached to the specified agent (if it is completely managed by the API) even if it isn't running in the container;-;List of behaviours
 /api/agent/available/behaviours/names/{localName};GET;get all names of all behaviours attached to the specified agent (if it is completely managed by the API) even if isn't running in the container;-;List of names
 /api/agent/behaviours/{localName};GET;get information of all behaviours attached to the specified agent running in the Jade Container;-;List of behaviours
@@ -19,10 +22,12 @@
 /api/agent/init;POST;init the specified agent in the Jade Container;{agentName:String};{message:String} or {error:String} with the result of the request
 /api/agent/stop;POST;stop the specified agent in the Jade Container;{agentName:String};{message:String} or {error:String} with the result of the request
 /api/agent/restart;POST;restart the specified agent in the Jade Container;{agentName:String};{message:String} or {error:String} with the result of the request
+/api/agent/create;POST;create a new agent;{className:String, agentName:String};{message:String} or {error:String} with the result of the request
+/api/agent/delete;POST;delete an existing agent;{agentName:String};{message:String} or {error:String} with the result of the request
 /api/behaviours;GET;get information of all behaviours instances which are in the Jade Container;-;List of behaviours
 /api/behaviours/names;GET;get all names of all behaviours instances whhich are in the Jade Container;-;List of names
 /api/behaviours/available;GET;get information of all behaviours I can add to distinct agents. Some of them are single intances, other are factory so I can attach them to every agent I need;-;List of behaviours
 /api/behaviours/available/names;GET;get all names of all behaviours I can add to distinct agents. Some of them are single intances, other are factory so I can attach them to every agent I need;-;List of behaviours
 /api/agent/add/behaviour;POST;add the specified behaviour to the specified agent;{agentName:String, behaviourName:String, startNow:boolean};{message:String} or {error:String} with the result of the request
 /api/agent/reset/behaviour;POST;reset the specified behaviour from the specified agent;{agentName:String, behaviourName:String};{message:String} or {error:String} with the result of the request
-/api/agent/remove/behaviour;POST;remove the specified behaviour from the specified agent;{agentName:String,behaviourName:String, forever:boolean};{message:String} or {error:String} with the result of the request
+/api/agent/remove/behaviour;POST;remove the specified behaviour from the specified agent;{agentName:String, behaviourName:String, forever:boolean};{message:String} or {error:String} with the result of the request
