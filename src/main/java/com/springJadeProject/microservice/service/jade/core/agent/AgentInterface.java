@@ -34,6 +34,12 @@ public interface AgentInterface {
     void setNickname(String nickname);
     String getNickname();
 
+    //useful to identify which class of agent we have instanced (we can have several agents from same class)
+    default String getAgentClassName(){
+        return this.getClass().getSimpleName();
+    }
+
+
 
     /** ChangeStateTo INITIATED from DELETED it's not possible, so if we want to use this
      * agent again it already have DELETED (4) as state. Won't be initiated when adding it

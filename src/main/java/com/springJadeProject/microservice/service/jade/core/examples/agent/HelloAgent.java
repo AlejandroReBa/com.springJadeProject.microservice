@@ -30,7 +30,12 @@ public class HelloAgent extends SpringAgent implements AgentInterface {
     }
 
     @Override
-    protected AgentInterface getNewInstance() {
+    public AgentInterface getNewInstance() {
         return new HelloAgent();
     }
-    }
+
+//    @Override
+//    public String getAgentClassName() {
+//        return this.getClass().getSimpleName();
+//    }
+}

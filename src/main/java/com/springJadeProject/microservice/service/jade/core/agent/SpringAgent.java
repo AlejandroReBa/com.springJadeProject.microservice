@@ -84,6 +84,7 @@ public abstract class SpringAgent extends Agent implements AgentInterface{
             }
             newInstance.addBehaviourToAgent(b);
         }
+        newInstance.setNickname(this.nickname);
         return newInstance;
     }
 
@@ -176,7 +177,7 @@ public abstract class SpringAgent extends Agent implements AgentInterface{
 
     @Override
     public String getNickname(){
-        String res = this.getClass().getSimpleName();
+        String res = getAgentClassName();
         if (!nickname.equals("")){
             res = nickname;
         }
@@ -243,7 +244,9 @@ public abstract class SpringAgent extends Agent implements AgentInterface{
      *
      * @return new instance from current class
      */
-    protected abstract AgentInterface getNewInstance();
+    @JsonIgnore
+    public abstract AgentInterface getNewInstance();
+
 
 }
 

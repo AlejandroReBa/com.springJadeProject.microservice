@@ -1,4 +1,4 @@
-package com.springJadeProject.microservice.model.ResponseMessageModel;
+package com.springJadeProject.microservice.model.responseMessageModel;
 
 public class APIActionDescription {
     private String path;

@@ -2,7 +2,7 @@
 /api/agent/{localName};GET;get information of the specified agent running in the Jade Container;-;An agent
 /api/agent/available/{localName};GET;get information of the specified agent (if it is completely managed by the API) even if it is not running in the container;-;An agent
 /api/agent/description/{localName};GET;get a container description of the specified agent running in the Jade Container;-;An AMSAgentDescription
-/api/agent/state/{localName};GET;get the state of the specified agent running in the Jade Container;-;{name,code}
+/api/agent/state/{localName};GET;get the state of the specified agent running in the Jade Container;-;{name,code}. Values can be {Initiated,1}, {Active,2}, {Idle,3}, {Suspended,4}, {Waiting,5}, {Deleted,6} or {Transit,7}
 /api/agent/available/state/{localName};GET;get the state of the specified agent (if it is completely managed by the API) even if it is not running in the container;-;{name,code}
 /api/agents;GET;get information of every agent running in the Jade Container;-;List of agents
 /api/agents/names;GET;collect the names of every agent running in the Jade Container;-;List of names

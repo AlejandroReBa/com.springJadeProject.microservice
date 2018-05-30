@@ -1,6 +1,6 @@
-package com.springJadeProject.microservice.model.ResponseMessageModel;
+package com.springJadeProject.microservice.model.responseMessageModel;
 
-import com.springJadeProject.microservice.model.ResponseMessageModel.contract.ResponseMessageInterface;
+import com.springJadeProject.microservice.model.responseMessageModel.contract.ResponseMessageInterface;
 
 public class ResponseErrorMessage implements ResponseMessageInterface{
     private String error;

@@ -29,9 +29,14 @@ public class ByeAgent extends SpringAgent implements AgentInterface {//Agent imp
     }
 
     @Override
-    protected AgentInterface getNewInstance() {
+    public AgentInterface getNewInstance() {
         return new ByeAgent();
     }
+
+//    @Override
+//    public String getAgentClassName() {
+//        return this.getClass().getSimpleName();
+//    }
 
 
 }

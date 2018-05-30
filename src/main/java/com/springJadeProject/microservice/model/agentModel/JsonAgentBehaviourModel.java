@@ -1,4 +1,4 @@
-package com.springJadeProject.microservice.model.AgentModel;
+package com.springJadeProject.microservice.model.agentModel;
 
 public class JsonAgentBehaviourModel {
     private String agentName;

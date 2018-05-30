@@ -47,12 +47,6 @@ public class AMSAgent extends SpringAgent implements AgentInterface {
         System.out.println("---->AMS Agent: getAID.getName --> " + this.getAID().getName() + " terminating");
     }
 
-    @Override
-    protected AgentInterface getNewInstance() {
-//        initiated  = false;
-        return new AMSAgent();
-    }
-
     @PostConstruct
     public void startup(){
         if (!isInitiated()){
@@ -95,6 +89,17 @@ public class AMSAgent extends SpringAgent implements AgentInterface {
         }
         return null;
     }
+
+    @Override
+    public AgentInterface getNewInstance() {
+//        initiated  = false;
+        return new AMSAgent();
+    }
+
+//    @Override
+//    public String getAgentClassName() {
+//        return this.getClass().getSimpleName();
+//    }
 
 
 }
