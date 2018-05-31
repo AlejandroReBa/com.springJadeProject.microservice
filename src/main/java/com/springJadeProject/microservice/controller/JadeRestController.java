@@ -1,6 +1,7 @@
 package com.springJadeProject.microservice.controller;
 
 import com.springJadeProject.microservice.model.agentModel.JsonAgentBehaviourModel;
+import com.springJadeProject.microservice.model.agentModel.JsonBehavioursModel;
 import com.springJadeProject.microservice.model.agentModel.JsonStateAgentModel;
 import com.springJadeProject.microservice.model.responseMessageModel.APIActionDescription;
 import com.springJadeProject.microservice.model.responseMessageModel.ResponseErrorMessage;
@@ -22,6 +23,7 @@ import jade.core.behaviours.Behaviour;
 import jade.domain.FIPAAgentManagement.AMSAgentDescription;
 import jade.wrapper.ControllerException;
 import jade.wrapper.State;
+import javafx.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -30,11 +32,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
-import javax.swing.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api")
@@ -88,10 +86,10 @@ public class JadeRestController {
 
 
     /**local variables below**/
-    private Map<String,AgentInterface> availableAgentList; //agents injected that I can instance
+    private Map<String, AgentInterface> availableAgentList; //agents injected that I can instance
     private Map<String, AgentInterface> agentList; //agent instances I have created
 
-    private Map<String,Behaviour> availableBehaviourList; //behaviours I can instance and attach to agents via API
+    private Map<String, Behaviour> availableBehaviourList; //behaviours I can instance and attach to agents via API
     private List<Behaviour> behaviourList; //behaviour instances
     /**local variables above**/
 
@@ -116,6 +114,8 @@ public class JadeRestController {
         secondHelloAgent.setNickname("SecondHelloAgent");
         agentList.put(secondHelloAgent.getNickname(), secondHelloAgent);
 
+        agentList.put(sendMessageAgent.getNickname(), sendMessageAgent);
+
 
         /**Add below those customized behaviours you have injected above**/
         availableBehaviourList = new HashMap<>();
@@ -130,7 +130,7 @@ public class JadeRestController {
                 () -> System.out.println("injecting behaviour and setting one shot");
 
 
-        Behaviour oneShotBehaviour = simpleBehaviourSpring.addOneShotBehaviour(actionInterface, helloAgent);
+        Behaviour oneShotBehaviour = simpleBehaviourSpring.addOneShotBehaviour(actionInterface, secondHelloAgent);
         oneShotBehaviour.setBehaviourName("OneShotBehaviour");
         behaviourList.add(oneShotBehaviour);
 
@@ -278,6 +278,24 @@ public class JadeRestController {
         return new ArrayList<>(agentList.keySet());
     }
 
+    //TODO TESTINGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+    @GetMapping("/agents/available/behaviours")
+    public List<JsonBehavioursModel> getBehavioursFromAllAgent(){
+        return this.getBehavioursFromAllAgentsInjected();
+    }
+
+//    @GetMapping("/agents/available/behaviours")
+//    public Map<String, List<Behaviour>> getBehavioursFromAllAgent(){
+//        return this.getBehavioursFromAllAgentsInjected();
+//    }
+
+//    @GetMapping("/agents/available/behaviours")
+//    public List<AbstractMap.SimpleEntry<Agent, List<Behaviour>>> getBehavioursFromAllAgent(){
+//        return this.getBehavioursFromAllAgentsInjected();
+//    }
+
+    //TODO ABOVE METHOD IS BEING TESTING -> AFTER THAT ADD TO API
+
     @GetMapping("/agent/available/behaviours/{localName}")
     public List<Behaviour> getBehavioursFromAgent(@PathVariable("localName") String localName){
         return this.getBehavioursFromAgentInjectedByLocalName(localName);
@@ -402,7 +420,6 @@ public class JadeRestController {
         }
     }
 
-    //todo ADD TO APIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
     @PostMapping(path="agent/create", consumes=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
         String className = jsonAgentBehaviourModel.getAgentClassName();
@@ -424,7 +441,6 @@ public class JadeRestController {
         }
     }
 
-    //todo ADD TO APIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
     @PostMapping(path="agent/delete", consumes=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
         String agentName = jsonAgentBehaviourModel.getAgentName();
@@ -602,7 +618,6 @@ public class JadeRestController {
 
     }
 
-
     private List<Behaviour> getBehavioursFromAgentInjectedByLocalName(String localName){
         List<Behaviour> result = new ArrayList<>();
         AgentInterface agent = agentList.get(localName);
@@ -617,12 +632,41 @@ public class JadeRestController {
 
     private List<String> getBehavioursNameFromAgentInjectedByLocalName(String localName){
         List<String> result = new ArrayList<>();
-        List<Behaviour> behaviourList = getBehavioursFromAgent(localName);
+        List<Behaviour> behaviourList = getBehavioursFromAgentInjectedByLocalName(localName);
         for (Behaviour behaviour : behaviourList){
             result.add(behaviour.getBehaviourName());
         }
         return result;
     }
+
+    private List<JsonBehavioursModel> getBehavioursFromAllAgentsInjected(){
+        List<JsonBehavioursModel> result = new ArrayList<>();
+        String agentName;
+
+        for (AgentInterface agentInterface : agentList.values()){
+            agentName = agentInterface.getNickname();
+            result.add(new JsonBehavioursModel(agentName, getBehavioursFromAgentInjectedByLocalName(agentName)));
+        }
+        return result;
+    }
+
+//    private Map<String, List<Behaviour>> getBehavioursFromAllAgentsInjected(){
+//        Map<String, List<Behaviour>> result = new HashMap<>();
+//
+//        for (AgentInterface agentInterface : agentList.values()){
+//            result.put(agentInterface.getNickname(), getBehavioursFromAgentInjectedByLocalName(agentInterface.getNickname()));
+//        }
+//        return result;
+//    }
+
+//    private List<AbstractMap.SimpleEntry<Agent, List<Behaviour>>> getBehavioursFromAllAgentsInjected(){
+//        List<AbstractMap.SimpleEntry<Agent, List<Behaviour>>> result = new ArrayList<>();
+//
+//        for (AgentInterface agentInterface : agentList.values()){
+//            result.add(new AbstractMap.SimpleEntry<>(agentInterface.getAgentInstance(), getBehavioursFromAgentInjectedByLocalName(agentInterface.getNickname())));
+//        }
+//        return result;
+//    }
 
     private Boolean checkBehaviourExistsByName(String behaviourName){
         boolean behaviourFound = false;
