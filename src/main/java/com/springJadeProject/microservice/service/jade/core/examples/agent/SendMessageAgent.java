@@ -32,10 +32,6 @@ public class SendMessageAgent extends SpringAgent implements AgentInterface {
         return new SendMessageAgent();
     }
 
-//    @Override
-//    public String getAgentClassName() {
-//        return this.getClass().getSimpleName();
-//    }
 
 
 }

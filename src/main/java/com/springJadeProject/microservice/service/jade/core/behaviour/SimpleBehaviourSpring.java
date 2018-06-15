@@ -1,6 +1,8 @@
 package com.springJadeProject.microservice.service.jade.core.behaviour;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.springJadeProject.microservice.service.jade.core.agent.AgentInterface;
+import jade.core.Agent;
 import jade.core.behaviours.*;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -21,18 +23,23 @@ import java.util.function.Function;
 public class SimpleBehaviourSpring extends SpringBehaviour {
     public Behaviour addOneShotBehaviour(ActionInterface actionInterface, AgentInterface agentInterface) {
         currentBehaviour = new OneShotBehaviour() {
-            private String agentLocalName;
-
             @Override
             public void action() {
-                if (myAgent != null){
-                    this.agentLocalName = myAgent.getLocalName();
-                }
                 actionInterface.action();
             }
 
             public String getAgentLocalName(){
-                return agentLocalName;
+                String res = null;
+                if (myAgent != null && myAgent instanceof AgentInterface){
+                    res = ((AgentInterface)myAgent).getNickname();
+                }
+                return res;
+            }
+
+            @JsonIgnore
+            @Override
+            public Agent getAgent() { //only for api purposes.
+                return super.getAgent();
             }
         };
         agentInterface.addBehaviourToAgent(currentBehaviour);
@@ -43,18 +50,23 @@ public class SimpleBehaviourSpring extends SpringBehaviour {
 
     public Behaviour addCyclicBehaviour(ActionInterface actionInterface, AgentInterface agentInterface) {
         currentBehaviour = new CyclicBehaviour() {
-            private String agentLocalName;
-
             @Override
             public void action() {
-                if (myAgent != null){
-                    this.agentLocalName = myAgent.getLocalName();
-                }
                 actionInterface.action();
             }
 
             public String getAgentLocalName(){
-                return agentLocalName;
+                String res = null;
+                if (myAgent != null && myAgent instanceof AgentInterface){
+                    res = ((AgentInterface)myAgent).getNickname();
+                }
+                return res;
+            }
+
+            @JsonIgnore
+            @Override
+            public Agent getAgent() { //only for api purposes.
+                return super.getAgent();
             }
         };
 
@@ -66,18 +78,24 @@ public class SimpleBehaviourSpring extends SpringBehaviour {
     public Behaviour addTickerBehaviour(ActionInterface actionInterface, AgentInterface agentInterface, long period) {
 
         currentBehaviour = new TickerBehaviour(agentInterface.getAgentInstance(), period) {
-            private String agentLocalName;
 
             @Override
             protected void onTick() {
-                if (myAgent != null){
-                    this.agentLocalName = myAgent.getLocalName();
-                }
                 actionInterface.action();
             }
 
             public String getAgentLocalName(){
-                return agentLocalName;
+                String res = null;
+                if (myAgent != null && myAgent instanceof AgentInterface){
+                    res = ((AgentInterface)myAgent).getNickname();
+                }
+                return res;
+            }
+
+            @JsonIgnore
+            @Override
+            public Agent getAgent() { //only for api purposes.
+                return super.getAgent();
             }
 
         };
@@ -89,7 +107,6 @@ public class SimpleBehaviourSpring extends SpringBehaviour {
     public Behaviour addWakerBehaviour(ActionInterface actionInterface, AgentInterface agentInterface, long timeout) {
 
         currentBehaviour = new WakerBehaviour(agentInterface.getAgentInstance(), timeout) {
-            private String agentLocalName;
             /*old method
             @Override
            protected void handleElapsedTimeout(){
@@ -99,14 +116,22 @@ public class SimpleBehaviourSpring extends SpringBehaviour {
 
             @Override
             protected void onWake() {
-                if (myAgent != null){
-                    this.agentLocalName = myAgent.getLocalName();
-                }
                 actionInterface.action();
             }
 
             public String getAgentLocalName(){
-                return agentLocalName;
+                String res = null;
+                if (myAgent != null && myAgent instanceof AgentInterface){
+                    res = ((AgentInterface)myAgent).getNickname();
+                }
+                return res;
+            }
+
+
+            @JsonIgnore
+            @Override
+            public Agent getAgent() { //only for api purposes.
+                return super.getAgent();
             }
         };
         agentInterface.addBehaviourToAgent(currentBehaviour);
@@ -117,7 +142,6 @@ public class SimpleBehaviourSpring extends SpringBehaviour {
     public Behaviour addWakerBehaviour(ActionInterface actionInterface, AgentInterface agentInterface, java.util.Date wakeupDate) {
 
         currentBehaviour = new WakerBehaviour(agentInterface.getAgentInstance(), wakeupDate) {
-            private String agentLocalName;
              /*old method
             @Override
            protected void handleElapsedTimeout(){
@@ -127,14 +151,24 @@ public class SimpleBehaviourSpring extends SpringBehaviour {
 
             @Override
             protected void onWake() {
-                if (myAgent != null){
-                    this.agentLocalName = myAgent.getLocalName();
-                }
+//                if (myAgent != null){
+//                    this.agentLocalName = myAgent.getLocalName();
+//                }
                 actionInterface.action();
             }
 
             public String getAgentLocalName(){
-                return agentLocalName;
+                String res = null;
+                if (myAgent != null && myAgent instanceof AgentInterface){
+                    res = ((AgentInterface)myAgent).getNickname();
+                }
+                return res;
+            }
+
+            @JsonIgnore
+            @Override
+            public Agent getAgent() { //only for api purposes.
+                return super.getAgent();
             }
         };
         agentInterface.addBehaviourToAgent(currentBehaviour);
@@ -147,12 +181,11 @@ public class SimpleBehaviourSpring extends SpringBehaviour {
                                         AgentInterface agentInterface) {
 
         currentBehaviour = new SimpleBehaviour() {
-            private String agentLocalName;
             @Override
             public void action() {
-                if (myAgent != null){
-                    this.agentLocalName = myAgent.getLocalName();
-                }
+//                if (myAgent != null){
+//                    this.agentLocalName = myAgent.getLocalName();
+//                }
                 actionIn.accept(sharedVariable);
             }
 
@@ -162,7 +195,17 @@ public class SimpleBehaviourSpring extends SpringBehaviour {
             }
 
             public String getAgentLocalName(){
-                return agentLocalName;
+                String res = null;
+                if (myAgent != null && myAgent instanceof AgentInterface){
+                    res = ((AgentInterface)myAgent).getNickname();
+                }
+                return res;
+            }
+
+            @JsonIgnore
+            @Override
+            public Agent getAgent() { //only for api purposes.
+                return super.getAgent();
             }
         };
 
@@ -176,13 +219,12 @@ public class SimpleBehaviourSpring extends SpringBehaviour {
                                         AgentInterface agentInterface) {
 
         currentBehaviour = new SimpleBehaviour() {
-            private String agentLocalName;
 
             @Override
             public void action() {
-                if (myAgent != null){
-                    this.agentLocalName = myAgent.getLocalName();
-                }
+//                if (myAgent != null){
+//                    this.agentLocalName = myAgent.getLocalName();
+//                }
                 actionIn.accept(sharedVariable);
             }
 
@@ -200,7 +242,17 @@ public class SimpleBehaviourSpring extends SpringBehaviour {
             }
 
             public String getAgentLocalName(){
-                return agentLocalName;
+                String res = null;
+                if (myAgent != null && myAgent instanceof AgentInterface){
+                    res = ((AgentInterface)myAgent).getNickname();
+                }
+                return res;
+            }
+
+            @JsonIgnore
+            @Override
+            public Agent getAgent() { //only for api purposes.
+                return super.getAgent();
             }
         };
 

@@ -1,7 +1,7 @@
 package com.springJadeProject.microservice.service.jade.core.examples.behaviour;
 
-import com.springJadeProject.microservice.service.jade.core.agent.SpringJadeAgentException;
-import com.springJadeProject.microservice.service.jade.core.behaviour.BehaviourWithAgentInterface;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.springJadeProject.microservice.service.jade.core.agent.JadeAgentException;
 import com.springJadeProject.microservice.service.jade.core.behaviour.BehaviourWithFactoryInterface;
 import jade.core.AID;
 import jade.core.Agent;
@@ -21,11 +21,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @Qualifier("SendACLMessage")
-public class SendACLMessageBlockBehaviour extends SimpleBehaviour implements BehaviourWithAgentInterface,BehaviourWithFactoryInterface {
+public class SendACLMessageBlockBehaviour extends SimpleBehaviour implements BehaviourWithFactoryInterface {
 
     private boolean finished = false;
     private boolean waitingResponse = false;
-    private Agent agent;
+//    private Agent agent;
     private String receiverLocalName = "ReceiveMessageAgent";
     /*Not working because I can only add one sender on matchTemplate to receive the answer*/
     //private List<String> receiverLocalNameList = new ArrayList<>();
@@ -34,30 +34,9 @@ public class SendACLMessageBlockBehaviour extends SimpleBehaviour implements Beh
     private String content = "Hey how are you doing?";
     private int performative = ACLMessage.INFORM;
 
-//    public static SendACLMessageBlockBehaviour getInstance (Agent myAgentIn){
-//        if(myAgentIn == null){
-//            return null;
-//        }else{
-//            return new SendACLMessageBlockBehaviour(myAgentIn);
-//        }
-//    }
-
-    @Override
-    public Behaviour getInstance (Agent myAgentIn){
-        if(myAgentIn == null){
-            return getInstance();
-        }else{
-            return new SendACLMessageBlockBehaviour(myAgentIn);
-        }
-    }
-
     @Override
     public Behaviour getInstance() {
         return new SendACLMessageBlockBehaviour();
-    }
-
-    private SendACLMessageBlockBehaviour(Agent myAgentIn){
-        agent = myAgentIn;
     }
 
     /*Required no-argument constructor for being a singleton component*/
@@ -84,15 +63,15 @@ public class SendACLMessageBlockBehaviour extends SimpleBehaviour implements Beh
         MessageTemplate template;
         ACLMessage msgResponse;
 
-        if (agent == null){
-            throw new SpringJadeAgentException("Action method from behaviour " + this.getClass().getSimpleName() +
+        if (myAgent == null){
+            throw new JadeAgentException("Action method from behaviour " + this.getClass().getSimpleName() +
             " failed because agent reference is null. There are some operations as SendACLMessage that need an agent.");
         }else if (receiverLocalName == null){
-            throw new SpringJadeAgentException("Action method from behaviour " + this.getClass().getSimpleName() +
+            throw new JadeAgentException("Action method from behaviour " + this.getClass().getSimpleName() +
                     " failed because the local name of the message receiver specified is null.");
         }else if (!waitingResponse) {
 //            finished = false;
-            System.out.println(agent.getLocalName() + ": Getting ready to send a message to the receiver");
+            System.out.println(myAgent.getLocalName() + ": Getting ready to send a message to the receiver");
             msg = new ACLMessage(performative);
             //msg.setLanguage("English");
             msg.addReceiver(receiverId);
@@ -106,7 +85,7 @@ public class SendACLMessageBlockBehaviour extends SimpleBehaviour implements Beh
 
             //msg.setContent("Hey there! how are you doing?");
             msg.setContent(content);
-            agent.send(msg);
+            myAgent.send(msg);
             waitingResponse = true;
 
             System.out.println("Sending greetings to receiver");
@@ -124,17 +103,17 @@ public class SendACLMessageBlockBehaviour extends SimpleBehaviour implements Beh
             template = MessageTemplate.and(template, languageFilter);
 
 //            ACLMessage msgResponse = agent.blockingReceive(template);
-            msgResponse = agent.receive(template);
+            msgResponse = myAgent.receive(template);
 
             if (msgResponse != null){
-                System.out.println(agent.getLocalName() + ": have just received the response: ");
+                System.out.println(myAgent.getLocalName() + ": have just received the response: ");
                 System.out.println(msgResponse.toString());
                 finished = true;
                 waitingResponse = false;
                 //send message is null ? how to checked it to avoid send to itself?...
             }else{
                 System.out.println("Waiting for the response message");
-                System.out.println("Agent who is waiting is: " + agent.getAMS());
+                System.out.println("Agent who is waiting is: " + myAgent.getLocalName());
                 block(); //only block this behaviour until you receive a msg or a explicit wake up
             }
 
@@ -145,25 +124,22 @@ public class SendACLMessageBlockBehaviour extends SimpleBehaviour implements Beh
         return finished;
     }
 
-    @Override
-    public void setNewAgent(Agent agentIn) {
-        agent = agentIn;
-    }
-
-    @Override
-    public String getAgentLocalName() {
-        String res = null;
-        if (agent != null){
-            res = agent.getLocalName();
-        }
-        return res;
-    }
+//    @Override
+//    public void setNewAgent(Agent agentIn) {
+//        agent = agentIn;
+//    }
 
     @Override
     public void reset() {
         super.reset();
         this.finished = false;
         this.waitingResponse = false;
+    }
+
+    @JsonIgnore
+    @Override
+    public Agent getAgent() { //required only for adding @JsonIgnore and avoid the behaviour had problems with jackson parse (infinity cycle)
+        return super.getAgent();
     }
 
 

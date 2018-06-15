@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 //@Stateless @AgentQualifier(type=AgentType.BYEAGENT)
 @Service
-@Qualifier("SpringAgent")
+@Qualifier("ByeAgent")
 public class ByeAgent extends SpringAgent implements AgentInterface {//Agent implements AgentInterface{
 
     @Override
@@ -33,10 +33,6 @@ public class ByeAgent extends SpringAgent implements AgentInterface {//Agent imp
         return new ByeAgent();
     }
 
-//    @Override
-//    public String getAgentClassName() {
-//        return this.getClass().getSimpleName();
-//    }
 
 
 }

@@ -1,37 +1,42 @@
 package com.springJadeProject.microservice.service.jade.core.examples.agent;
 
+
 import com.springJadeProject.microservice.service.jade.core.agent.AgentInterface;
 import com.springJadeProject.microservice.service.jade.core.agent.SpringAgent;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 
 /**
  *
  * @author Alejandro Reyes
  */
 
-//@Stateless @AgentQualifier(type=AgentType.HELLOAGENT)
+
 @Service
-@Qualifier("HelloAgent")
-public class HelloAgent extends SpringAgent implements AgentInterface {
+@Qualifier("PlainAgent")
+public class PlainAgent extends SpringAgent implements AgentInterface{
 
     @Override
     protected void setup(){
         super.setup();
-        System.out.println ("------>Hello World from Hello Agent yass :D");
-        System.out.println ("My name is " + this.getLocalName());
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh:m:ss");
+        System.out.println (simpleDateFormat.format(new Date()) + ": Plain Agent " + this.getLocalName() + " is running! :D  -> Welcome!");
     }
 
     @Override
     protected void takeDown(){
         super.takeDown();
-        System.out.println("---->HelloAgent: getAID.getName --> " + this.getAID().getName() + " terminating");
-        //AgentsManager.deleteAgentFromList(nickname, this);
+        System.out.println ("Plain Agent " + this.getLocalName() + " has stopped! D: -> Goodbye!");
     }
+
 
     @Override
     public AgentInterface getNewInstance() {
-        return new HelloAgent();
+        return new PlainAgent();
     }
 
 }

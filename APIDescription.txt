@@ -13,6 +13,7 @@
 /api/agents/available/names;GET;get names of every agent you can use to create agent instances via API;-;List of names
 /api/agents/created;GET;get information of every created agent you can manage via API;-;List of agents
 /api/agents/created/names;GET;get names of every created agent you can manage via API;-;List of names
+/api/agents/available/behaviours;GET;get agent name of every created agent you can manage via API with the list of behaviours attached;-;[{agentName:String, behaviourList:[{Behaviour}]}]
 /api/agent/available/behaviours/{localName};GET;get information of all behaviours attached to the specified agent (if it is completely managed by the API) even if it isn't running in the container;-;List of behaviours
 /api/agent/available/behaviours/names/{localName};GET;get all names of all behaviours attached to the specified agent (if it is completely managed by the API) even if isn't running in the container;-;List of names
 /api/agent/behaviours/{localName};GET;get information of all behaviours attached to the specified agent running in the Jade Container;-;List of behaviours

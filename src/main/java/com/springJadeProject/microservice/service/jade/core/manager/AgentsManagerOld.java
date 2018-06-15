@@ -143,4 +143,32 @@ public class AgentsManagerOld {
 //
 //    }
 
+    /*
+    public static void changeStateToInititated(Agent agent){
+        System.out.println("change state agent -> agentstate1:" + agent.getState());
+
+        //custom inititaed
+        LifeCycle customInitiatedLifeCycle = new LifeCycle(Agent.AP_INITIATED){
+                        @Override
+                        public boolean alive() {
+                            return false;
+                        }
+
+                        //from this fake initiated state we introduce a intermediate state between
+                        //deleted and initiated. Original active is only turned on when we first create Agent
+                        //(not needed to be added to container think so) Just in case we can move to ap_active
+                        //and original ap_active. Previous to this we were on deleted state and we could not move
+                        //from there...so when we try to add again the agent his state was deleted...so same in container
+                        @Override
+                        public boolean transitionTo(LifeCycle to){
+                            return (to.getState() == Agent.AP_ACTIVE || to.getState() == Agent.AP_INITIATED);
+                        }
+                    };
+
+        agent.changeStateTo(customInitiatedLifeCycle);
+
+        System.out.println("change state agent -> agentstate2:" + agent.getState());
+    }
+*/
+
 }

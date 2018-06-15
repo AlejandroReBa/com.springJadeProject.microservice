@@ -2,7 +2,6 @@ package com.springJadeProject.microservice.service.jade.core.agent;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.springJadeProject.microservice.service.jade.core.behaviour.BehaviourWithAgentInterface;
 import com.springJadeProject.microservice.service.jade.core.manager.AgentsManager;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
@@ -78,21 +77,11 @@ public abstract class SpringAgent extends Agent implements AgentInterface{
         for (Behaviour b : behaviourList){
             removeBehaviour(b);
             b.reset();
-            if (b instanceof BehaviourWithAgentInterface){
-                ((BehaviourWithAgentInterface) b).setNewAgent(newInstance.getAgentInstance());
-                //System.out.println("-->YES, IT'S INSTANCEOF BehaviourWithAgentInterface: ");
-            }
             newInstance.addBehaviourToAgent(b);
         }
         newInstance.setNickname(this.nickname);
         return newInstance;
     }
-
-    @Override
-    public void checkAgentStatus(){
-        AgentsManager.checkStatus(this);
-    }
-
 
     @JsonIgnore //required to avoid an infinity cycle behaviour when Jackson deserialize an SpringAgent
                 //by default using get* named method makes it to consider that we have a property named AgentInterface.
@@ -108,6 +97,9 @@ public abstract class SpringAgent extends Agent implements AgentInterface{
         boolean isBehaviourAdded = false;
         if (behaviour != null && !checkBehaviourExists(behaviour)) {
             behaviourList.add(behaviour);
+            //added to be able of checking who is the agent owner of the behaviour no requiring the agent to be initiated //03/06/2018
+            behaviour.setAgent(this);
+            System.out.println("Adding behaviour " + behaviour.getBehaviourName() + " to agent " + this.getNickname() );
             isBehaviourAdded = true;
         }
         return isBehaviourAdded;

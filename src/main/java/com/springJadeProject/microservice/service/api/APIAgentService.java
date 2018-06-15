@@ -35,8 +35,6 @@ public class APIAgentService {
         return agentsManager.getAgentsOnContainer().get(localName);
     }
 
-    /**Field Agent from behaviour will be always null from API to avoid Jackson serialization infinity loop
-     * due to myAgent variable. @JsonIgnore would fix this problem but we don't want to modify JADE library*/
     public List<Behaviour> findBehavioursFromAgentByLocalName(String localName){
         return this.getBehavioursFromAgentWithAgentNullAndStateByLocalName(localName, null);
     }
@@ -84,7 +82,6 @@ public class APIAgentService {
         List<Behaviour> behavioursList = this.getBehavioursFromAgentByLocalName(localName);
 
         if (state == null){
-//            result = new ArrayList<>(behavioursList);
             result = behavioursList;
         }else{
             result = new ArrayList<>();

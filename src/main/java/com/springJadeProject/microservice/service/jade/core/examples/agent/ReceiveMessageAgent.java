@@ -32,9 +32,5 @@ public class ReceiveMessageAgent extends SpringAgent implements AgentInterface{
         return new ReceiveMessageAgent();
     }
 
-//    @Override
-//    public String getAgentClassName() {
-//        return this.getClass().getSimpleName();
-//    }
 
 }

@@ -16,6 +16,8 @@ import com.springJadeProject.microservice.service.jade.core.behaviour.SimpleBeha
 import com.springJadeProject.microservice.service.jade.core.behaviour.SpringBehaviour;
 import com.springJadeProject.microservice.service.jade.core.examples.behaviour.ReceiveACLMessageBlockBehaviour;
 import com.springJadeProject.microservice.service.jade.core.examples.behaviour.SendACLMessageBlockBehaviour;
+import com.springJadeProject.microservice.service.jade.core.examples.behaviour.SimpleCyclicBehaviour;
+import com.springJadeProject.microservice.service.jade.core.examples.behaviour.SimplePrintMessageBehaviour;
 import com.springJadeProject.microservice.service.jade.core.manager.AMSAgent;
 import jade.core.Agent;
 import jade.core.AgentState;
@@ -23,7 +25,6 @@ import jade.core.behaviours.Behaviour;
 import jade.domain.FIPAAgentManagement.AMSAgentDescription;
 import jade.wrapper.ControllerException;
 import jade.wrapper.State;
-import javafx.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -44,7 +45,7 @@ public class JadeRestController {
     private AgentInterface helloAgent;
 
     @Autowired
-    @Qualifier("SpringAgent")
+    @Qualifier("ByeAgent")
     private AgentInterface byeAgent;
 
     @Autowired
@@ -54,6 +55,11 @@ public class JadeRestController {
     @Autowired
     @Qualifier("SendMessageAgent")
     private AgentInterface sendMessageAgent;
+
+    @Autowired
+    @Qualifier("PlainAgent")
+    private AgentInterface plainAgent;
+
     /**Inject your agents via @Autowired above*/
 
     /**Inject your behaviors via @Autowired below**/
@@ -68,6 +74,14 @@ public class JadeRestController {
     @Autowired
     @Qualifier("SendACLMessage")
     SendACLMessageBlockBehaviour sendACLMessageBlockBehaviour;
+
+    @Autowired
+    @Qualifier("SimplePrintMessageBehaviour")
+    SimplePrintMessageBehaviour simplePrintMessageBehaviour;
+
+    @Autowired
+    @Qualifier("SimpleCyclicBehaviour")
+    SimpleCyclicBehaviour simpleCyclicBehaviour;
 
 
     /**Inject your behaviors via @Autowired above**/
@@ -98,14 +112,11 @@ public class JadeRestController {
         /**Add below those agents you have injected above. These instances will be used as model to create others**/
         //add agents to availableAgentList
         availableAgentList = new HashMap<>();
-//        availableAgentList.put(helloAgent.getNickname(), helloAgent);
-//        availableAgentList.put(byeAgent.getNickname(), byeAgent);
-//        availableAgentList.put(receiveMessageAgent.getNickname(), receiveMessageAgent);
-//        availableAgentList.put(sendMessageAgent.getNickname(), sendMessageAgent);
         availableAgentList.put(helloAgent.getAgentClassName(), helloAgent);
         availableAgentList.put(byeAgent.getAgentClassName(), byeAgent);
         availableAgentList.put(receiveMessageAgent.getAgentClassName(), receiveMessageAgent);
         availableAgentList.put(sendMessageAgent.getAgentClassName(), sendMessageAgent);
+        availableAgentList.put(plainAgent.getAgentClassName(), plainAgent);
 
 
         /**create agents instances below**/
@@ -114,13 +125,21 @@ public class JadeRestController {
         secondHelloAgent.setNickname("SecondHelloAgent");
         agentList.put(secondHelloAgent.getNickname(), secondHelloAgent);
 
-        agentList.put(sendMessageAgent.getNickname(), sendMessageAgent);
+        AgentInterface secondSendMessageAgent = ((SpringAgent)sendMessageAgent).getNewInstance();
+        secondSendMessageAgent.setNickname("SecondSendMessageAgent");
+        agentList.put(secondSendMessageAgent.getNickname(), secondSendMessageAgent);
+
+        AgentInterface secondReceiveMessageAgent = ((SpringAgent)receiveMessageAgent).getNewInstance();
+        secondReceiveMessageAgent.setNickname("SecondReceiveMessageAgent");
+        agentList.put(secondReceiveMessageAgent.getNickname(), secondReceiveMessageAgent);
 
 
         /**Add below those customized behaviours you have injected above**/
         availableBehaviourList = new HashMap<>();
         availableBehaviourList.put(sendACLMessageBlockBehaviour.getBehaviourName(), sendACLMessageBlockBehaviour);
         availableBehaviourList.put(receiveACLMessageBlockBehaviour.getBehaviourName(), receiveACLMessageBlockBehaviour);
+        availableBehaviourList.put(simplePrintMessageBehaviour.getBehaviourName(), simplePrintMessageBehaviour);
+        availableBehaviourList.put(simpleCyclicBehaviour.getBehaviourName(), simpleCyclicBehaviour);
 
         /**create and bound behaviours to agents below**/
 
@@ -134,30 +153,30 @@ public class JadeRestController {
         oneShotBehaviour.setBehaviourName("OneShotBehaviour");
         behaviourList.add(oneShotBehaviour);
 
-        SpringBehaviour.ActionInterface actionInterfaceCyclic =
-                () -> System.out.println("injecting behaviour and setting cyclic behaviour. FOR EVER :)");
-        Behaviour cyclicBehaviour = simpleBehaviourSpring.addCyclicBehaviour(actionInterfaceCyclic, helloAgent);
-        cyclicBehaviour.setBehaviourName("CyclicBehaviour");
-        behaviourList.add(cyclicBehaviour);
+//        SpringBehaviour.ActionInterface actionInterfaceCyclic =
+//                () -> System.out.println("injecting behaviour and setting cyclic behaviour. FOR EVER :)");
+//        Behaviour cyclicBehaviour = simpleBehaviourSpring.addCyclicBehaviour(actionInterfaceCyclic, helloAgent);
+//        cyclicBehaviour.setBehaviourName("CyclicBehaviour");
+//        behaviourList.add(cyclicBehaviour);
 
         //example of behaviour template created in examples; you only need to attach the agent to the behaviour
         //on SendACLMessageBlockBehaviour you also need to attach the receiver name
         //Do I need to inject it actually? getInstance..is static method
-        ReceiveACLMessageBlockBehaviour receiveBehaviour = (ReceiveACLMessageBlockBehaviour)receiveACLMessageBlockBehaviour.getInstance(receiveMessageAgent.getAgentInstance());
-        receiveMessageAgent.addBehaviourToAgent(receiveBehaviour);
+        ReceiveACLMessageBlockBehaviour receiveBehaviour = (ReceiveACLMessageBlockBehaviour)receiveACLMessageBlockBehaviour.getInstance();
+        secondReceiveMessageAgent.addBehaviourToAgent(receiveBehaviour);
 //        behaviourList.put(receiveBehaviour.getBehaviourName(), receiveBehaviour);
         behaviourList.add(receiveBehaviour);
 
-        SendACLMessageBlockBehaviour sendBehaviour = (SendACLMessageBlockBehaviour)sendACLMessageBlockBehaviour.getInstance(sendMessageAgent.getAgentInstance());
-        sendBehaviour.setReceiverLocalName(receiveMessageAgent.getNickname());
+        SendACLMessageBlockBehaviour sendBehaviour = (SendACLMessageBlockBehaviour)sendACLMessageBlockBehaviour.getInstance();
+        sendBehaviour.setReceiverLocalName(secondReceiveMessageAgent.getNickname());
         sendBehaviour.setLanguage("Spanish");
-        sendMessageAgent.addBehaviourToAgent(sendBehaviour);
+        secondSendMessageAgent.addBehaviourToAgent(sendBehaviour);
 //        behaviourList.put(sendBehaviour.getBehaviourName(), sendBehaviour);
         behaviourList.add(sendBehaviour);
 
-        //Todo: delete this last behaviour
-        ReceiveACLMessageBlockBehaviour receiveBehaviour2 = (ReceiveACLMessageBlockBehaviour)receiveACLMessageBlockBehaviour.getInstance(byeAgent.getAgentInstance());
-        byeAgent.addBehaviourToAgent(receiveBehaviour2);
+//        //Todo: delete this last behaviour
+        ReceiveACLMessageBlockBehaviour receiveBehaviour2 = (ReceiveACLMessageBlockBehaviour)receiveACLMessageBlockBehaviour.getInstance();
+        secondHelloAgent.addBehaviourToAgent(receiveBehaviour2);
 //        behaviourList.put(receiveBehaviour.getBehaviourName(), receiveBehaviour);
         behaviourList.add(receiveBehaviour2);
     }
@@ -278,11 +297,12 @@ public class JadeRestController {
         return new ArrayList<>(agentList.keySet());
     }
 
-    //TODO TESTINGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG
+    //TODO TESTING IS DONE. IT WORKS WELL.. kind of
     @GetMapping("/agents/available/behaviours")
     public List<JsonBehavioursModel> getBehavioursFromAllAgent(){
         return this.getBehavioursFromAllAgentsInjected();
     }
+    //TODO ABOVE METHOD IS BEING TESTING -> AFTER THAT ADD TO API
 
 //    @GetMapping("/agents/available/behaviours")
 //    public Map<String, List<Behaviour>> getBehavioursFromAllAgent(){
@@ -294,7 +314,7 @@ public class JadeRestController {
 //        return this.getBehavioursFromAllAgentsInjected();
 //    }
 
-    //TODO ABOVE METHOD IS BEING TESTING -> AFTER THAT ADD TO API
+
 
     @GetMapping("/agent/available/behaviours/{localName}")
     public List<Behaviour> getBehavioursFromAgent(@PathVariable("localName") String localName){
@@ -377,7 +397,7 @@ public class JadeRestController {
                     newAgentInstance =  ((SpringAgent) agentRunningOnContainer).shutDownAgent();
                     //add the new instance of this agent to agentList, overriding the old instance we have just stopped
                     agentList.put(agentName, newAgentInstance);
-                    return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName) + " stopped successfully");
+                    return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " stopped successfully"));
                 }else{
                     return ResponseEntity.status(409).body(new ResponseNotificationMessage("Agent " + agentName + " hasn't been found running in the system"));
                 }
@@ -422,22 +442,23 @@ public class JadeRestController {
 
     @PostMapping(path="agent/create", consumes=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
-        String className = jsonAgentBehaviourModel.getAgentClassName();
+        String className = jsonAgentBehaviourModel.getClassName();
         String agentName = jsonAgentBehaviourModel.getAgentName();
         AgentInterface agentToCreateInstance;
         AgentInterface newAgent;
         if (checkAgentClassExistsByClassName(className)){
-            if (checkAgentInstanceExistsByName(agentName)){
+            System.out.println("agent name received by create agent-> " + agentName);
+            if (!checkAgentInstanceExistsByName(agentName)){
                 agentToCreateInstance = availableAgentList.get(className);
                 newAgent = ((SpringAgent) agentToCreateInstance).getNewInstance();
                 newAgent.setNickname(agentName);
                 agentList.put(agentName, newAgent);
                 return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " from class " + className + " has been created successfully"));
             }else{
-                return ResponseEntity.status(409).body(new ResponseNotificationMessage("A agent with  " + jsonAgentBehaviourModel.getAgentName() + " exists already. You can't create two agents with the same name"));
+                return ResponseEntity.status(409).body(new ResponseNotificationMessage("A agent with the name" + jsonAgentBehaviourModel.getAgentName() + " exists already. You can't create two agents with the same name"));
             }
         }else{
-            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent class " + jsonAgentBehaviourModel.getAgentClassName() + " doesn't exist in the system"));
+            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent class " + jsonAgentBehaviourModel.getClassName() + " doesn't exist in the system"));
         }
     }
 
@@ -460,12 +481,7 @@ public class JadeRestController {
 
     @GetMapping("/behaviours") //behaviours instances bounded to agents.
     public List<Behaviour> getBehaviours(){
-        List<Behaviour> result = new ArrayList<>(behaviourList);
-
-        for (Behaviour behaviour : result){
-            behaviour.setAgent(null);
-        }
-        return result;
+        return behaviourList;
     }
 
     @GetMapping("/behaviours/names")
@@ -499,14 +515,13 @@ public class JadeRestController {
 
         if (agent != null && behaviour != null){
             if (behaviour instanceof BehaviourWithFactoryInterface){
-                behaviour = ((BehaviourWithFactoryInterface) behaviour).getInstance(agent.getAgentInstance());
-            }else if (behaviour.getAgent() != null){
+                behaviour = ((BehaviourWithFactoryInterface) behaviour).getInstance();
+            } else if (behaviour.getAgent() != null){
                 return ResponseEntity.badRequest().body(new ResponseErrorMessage("Behaviour " + behaviourName
                 + " is already attached to the Agent " + behaviour.getAgent().getLocalName() + ". You should use behaviours" +
                         " with factory methods to get multiples instances for different agents."));
             }
 
-//            if (jsonAgentBehaviourModel.getStartNow() == null || !jsonAgentBehaviourModel.getStartNow()) {
             if (!startNow) {
                 isBehaviourAdded = agent.addBehaviourToAgent(behaviour);
             }else{
@@ -572,6 +587,7 @@ public class JadeRestController {
         boolean removeForever = jsonAgentBehaviourModel.getForever();
 
         AgentInterface agent = agentList.get(agentName);
+        System.out.println ("Agent name is: " + agentName);
         Behaviour behaviourToRemove;
         String successMessage;
 
@@ -623,9 +639,6 @@ public class JadeRestController {
         AgentInterface agent = agentList.get(localName);
         if (agent != null){
             result = new ArrayList<>(agent.getBehavioursFromAgent());
-            for (Behaviour behaviour : result){
-                behaviour.setAgent(null);
-            }
         }
         return result;
     }
@@ -698,7 +711,13 @@ public class JadeRestController {
         if (agent != null && behaviourName != null){
             while (behaviourFound == null && index < behaviourList.size()){
                 behaviourNameInList = behaviourList.get(index).getBehaviourName();
+//                agentInList = behaviourList.get(index).getAgent();
                 agentInList = behaviourList.get(index).getAgent();
+                //todo delete System.out.println
+                System.out.println ("Behaviour name:" + behaviourName + " vs Behaviour in list:" + behaviourNameInList );
+                System.out.println ("agentInList: " + agentInList);//+ " -> agentInList: " + agentInList.getLocalName());
+                if (agentInList != null) System.out.println ("agentName is: " + agentInList.getLocalName());
+                //todo delete System.out.println
                 if (behaviourNameInList != null && behaviourName.equals(behaviourNameInList) && agent.equals(agentInList)){
                     behaviourFound = behaviourList.get(index);
                 }else{
@@ -710,6 +729,10 @@ public class JadeRestController {
     }
 
     private Boolean checkAgentClassExistsByClassName(String className){
+        for (String agentName : availableAgentList.keySet()){
+            System.out.println ("AgentClassName -> " + agentName);
+        }
+        System.out.println("agent class name received -> " + className);
         return availableAgentList.containsKey(className);
     }
 

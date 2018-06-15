@@ -97,7 +97,7 @@ public class AMSAgent extends SpringAgent implements AgentInterface {
     }
 
 //    @Override
-//    public String getAgentClassName() {
+//    public String getClassName() {
 //        return this.getClass().getSimpleName();
 //    }
 

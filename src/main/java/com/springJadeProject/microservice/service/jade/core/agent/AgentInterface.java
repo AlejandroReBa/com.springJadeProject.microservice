@@ -17,7 +17,6 @@ public interface AgentInterface {
     void init(String nickname);
     //void shutDownAgent(); now  we need to return a new instance
     AgentInterface shutDownAgent();
-    void checkAgentStatus();
     Agent getAgentInstance();
     //the user can create it owns jade behaviour if he does not want to use our framework
     //we also use this method to attach behaviour when they are created via SpringBehaviour
