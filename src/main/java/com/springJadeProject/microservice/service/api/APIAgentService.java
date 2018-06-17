@@ -1,7 +1,7 @@
 package com.springJadeProject.microservice.service.api;
 
-import com.springJadeProject.microservice.service.jade.core.agent.SpringAgent;
-import com.springJadeProject.microservice.service.jade.core.manager.AgentsManager;
+import com.springJadeProject.microservice.service.jade.spring.core.agent.SpringAgent;
+import com.springJadeProject.microservice.service.jade.spring.core.manager.AgentsManager;
 import jade.core.Agent;
 import jade.core.behaviours.Behaviour;
 import org.springframework.beans.factory.annotation.Autowired;

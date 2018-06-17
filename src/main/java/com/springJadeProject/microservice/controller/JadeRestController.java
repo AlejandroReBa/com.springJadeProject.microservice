@@ -9,16 +9,16 @@ import com.springJadeProject.microservice.model.responseMessageModel.ResponseNot
 import com.springJadeProject.microservice.model.responseMessageModel.contract.ResponseMessageInterface;
 import com.springJadeProject.microservice.service.api.APIAgentService;
 import com.springJadeProject.microservice.service.api.APIDescriptionService;
-import com.springJadeProject.microservice.service.jade.core.agent.AgentInterface;
-import com.springJadeProject.microservice.service.jade.core.agent.SpringAgent;
-import com.springJadeProject.microservice.service.jade.core.behaviour.BehaviourWithFactoryInterface;
-import com.springJadeProject.microservice.service.jade.core.behaviour.SimpleBehaviourSpring;
-import com.springJadeProject.microservice.service.jade.core.behaviour.SpringBehaviour;
-import com.springJadeProject.microservice.service.jade.core.examples.behaviour.ReceiveACLMessageBlockBehaviour;
-import com.springJadeProject.microservice.service.jade.core.examples.behaviour.SendACLMessageBlockBehaviour;
-import com.springJadeProject.microservice.service.jade.core.examples.behaviour.SimpleCyclicBehaviour;
-import com.springJadeProject.microservice.service.jade.core.examples.behaviour.SimplePrintMessageBehaviour;
-import com.springJadeProject.microservice.service.jade.core.manager.AMSAgent;
+import com.springJadeProject.microservice.service.jade.spring.core.agent.AgentInterface;
+import com.springJadeProject.microservice.service.jade.spring.core.agent.SpringAgent;
+import com.springJadeProject.microservice.service.jade.spring.core.behaviour.BehaviourWithFactoryInterface;
+import com.springJadeProject.microservice.service.jade.spring.core.behaviour.SimpleBehaviourSpring;
+import com.springJadeProject.microservice.service.jade.spring.core.behaviour.SpringBehaviour;
+import com.springJadeProject.microservice.service.jade.spring.example.behaviour.ReceiveACLMessageBlockBehaviour;
+import com.springJadeProject.microservice.service.jade.spring.example.behaviour.SendACLMessageBlockBehaviour;
+import com.springJadeProject.microservice.service.jade.spring.example.behaviour.SimpleCyclicBehaviour;
+import com.springJadeProject.microservice.service.jade.spring.example.behaviour.SimplePrintMessageBehaviour;
+import com.springJadeProject.microservice.service.jade.spring.core.manager.AMSAgent;
 import jade.core.Agent;
 import jade.core.AgentState;
 import jade.core.behaviours.Behaviour;
@@ -159,7 +159,7 @@ public class JadeRestController {
 //        cyclicBehaviour.setBehaviourName("CyclicBehaviour");
 //        behaviourList.add(cyclicBehaviour);
 
-        //example of behaviour template created in examples; you only need to attach the agent to the behaviour
+        //example of behaviour template created in example; you only need to attach the agent to the behaviour
         //on SendACLMessageBlockBehaviour you also need to attach the receiver name
         //Do I need to inject it actually? getInstance..is static method
         ReceiveACLMessageBlockBehaviour receiveBehaviour = (ReceiveACLMessageBlockBehaviour)receiveACLMessageBlockBehaviour.getInstance();
@@ -560,7 +560,7 @@ public class JadeRestController {
         boolean behaviourExists = checkBehaviourExistsByName(behaviourName);
 
         if (agent != null && behaviourExists){
-            isBehaviourReset = agent.resetBehaviourFromAgentByName(behaviourName);
+            isBehaviourReset = agent.resetBehaviourFromAgent(behaviourName);
 
             if (isBehaviourReset){
                 return ResponseEntity.ok(new ResponseNotificationMessage("Behaviour " + behaviourName

@@ -1,0 +1,98 @@
+package com.springJadeProject.microservice.service.jade.spring.example.musicAgent.model;
+
+import jade.core.AID;
+
+import java.io.Serializable;
+
+/**
+ * source: https://github.com/ubenzer/Agent-Based-Programming-Experiments-with-JADE/tree/master/src/pojo
+ * MIT License
+ *
+ * modified and adapted by Alejandro Reyes
+ */
+public class SongSellInfo implements Serializable, Cloneable {
+
+  private final float avgRating;
+  private final float price;
+  private final AID sellerAgent;
+  private final Song song;
+  
+  public SongSellInfo(float avgRating, float price, AID sellerAgent, Song song) {
+    super();
+    this.avgRating = avgRating;
+    this.price = price;
+    this.sellerAgent = sellerAgent;
+    this.song = song;
+  }
+  public SongSellInfo(float avgRating, float price) {
+    this(avgRating, price, null, null);
+  }
+  
+  public float getAvgRating() {
+    return this.avgRating;
+  }
+  public float getPrice() {
+    return this.price;
+  }
+  public AID getSellerAgent() {
+    return sellerAgent;
+  }
+  public Song getSong() {
+    return song;
+  }
+ 
+  @Override
+  public String toString() {
+    return this.song + " [R:" + this.avgRating + "] [P:" + this.price + "] @" + this.sellerAgent.getLocalName();
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + Float.floatToIntBits(this.avgRating);
+    result = prime * result + Float.floatToIntBits(this.price);
+    result = prime * result + ((this.sellerAgent == null) ? 0 : this.sellerAgent.hashCode());
+    result = prime * result + ((this.song == null) ? 0 : this.song.hashCode());
+    return result;
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    SongSellInfo other = (SongSellInfo) obj;
+    if (Float.floatToIntBits(this.avgRating) != Float.floatToIntBits(other.avgRating)) {
+      return false;
+    }
+    if (Float.floatToIntBits(this.price) != Float.floatToIntBits(other.price)) {
+      return false;
+    }
+    if (this.sellerAgent == null) {
+      if (other.sellerAgent != null) {
+        return false;
+      }
+    } else if (!this.sellerAgent.equals(other.sellerAgent)) {
+      return false;
+    }
+    if (this.song == null) {
+      if (other.song != null) {
+        return false;
+      }
+    } else if (!this.song.equals(other.song)) {
+      return false;
+    }
+    return true;
+  }
+  @Override
+  public SongSellInfo clone() {
+    return new SongSellInfo(this.getAvgRating(), this.getPrice(), this.getSellerAgent(), this.getSong());
+  }
+}
