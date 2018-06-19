@@ -19,6 +19,9 @@ public interface BehaviourWithFactoryInterface {
     @JsonIgnore
     Behaviour getInstance ();
 
+    @JsonIgnore
+    Behaviour getInstance (Agent agent);
+
     /**useful to know which agent is bounded to the behaviour
     * If you use a factory it means you are going to manage the behaviour via API
     * so I need to know the agent local name to be displayed via Jackson/JSON **/

@@ -12,8 +12,8 @@ import com.springJadeProject.microservice.service.api.APIDescriptionService;
 import com.springJadeProject.microservice.service.jade.spring.core.agent.AgentInterface;
 import com.springJadeProject.microservice.service.jade.spring.core.agent.SpringAgent;
 import com.springJadeProject.microservice.service.jade.spring.core.behaviour.BehaviourWithFactoryInterface;
-import com.springJadeProject.microservice.service.jade.spring.core.behaviour.SimpleBehaviourSpring;
-import com.springJadeProject.microservice.service.jade.spring.core.behaviour.SpringBehaviour;
+import com.springJadeProject.microservice.service.jade.spring.core.behaviour.SharedVariableInteger;
+import com.springJadeProject.microservice.service.jade.spring.core.behaviour.SimpleBehaviourFactory;
 import com.springJadeProject.microservice.service.jade.spring.example.behaviour.ReceiveACLMessageBlockBehaviour;
 import com.springJadeProject.microservice.service.jade.spring.example.behaviour.SendACLMessageBlockBehaviour;
 import com.springJadeProject.microservice.service.jade.spring.example.behaviour.SimpleCyclicBehaviour;
@@ -34,6 +34,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/api")
@@ -64,8 +66,8 @@ public class JadeRestController {
 
     /**Inject your behaviors via @Autowired below**/
     @Autowired
-    @Qualifier("SimpleBehaviourSpring")
-    private SimpleBehaviourSpring simpleBehaviourSpring;
+    @Qualifier("SimpleBehaviourFactory")
+    private SimpleBehaviourFactory simpleBehaviourFactory;
 
     @Autowired
     @Qualifier("ReceiveACLMessage")
@@ -145,11 +147,11 @@ public class JadeRestController {
 
         behaviourList = new ArrayList<>();
         //example of behaviour created and set from controller using simpleBehaviourSpring (a factory class)
-        SpringBehaviour.ActionInterface actionInterface =
+        SimpleBehaviourFactory.ActionInterface actionInterface =
                 () -> System.out.println("injecting behaviour and setting one shot");
 
 
-        Behaviour oneShotBehaviour = simpleBehaviourSpring.addOneShotBehaviour(actionInterface, secondHelloAgent);
+        Behaviour oneShotBehaviour = simpleBehaviourFactory.addOneShotBehaviour(actionInterface, secondHelloAgent);
         oneShotBehaviour.setBehaviourName("OneShotBehaviour");
         behaviourList.add(oneShotBehaviour);
 
@@ -179,6 +181,61 @@ public class JadeRestController {
         secondHelloAgent.addBehaviourToAgent(receiveBehaviour2);
 //        behaviourList.put(receiveBehaviour.getBehaviourName(), receiveBehaviour);
         behaviourList.add(receiveBehaviour2);
+
+
+        int valueToFinish = 4;
+        SharedVariableInteger sharedVariable = SharedVariableInteger.getSharedVariableInstance(valueToFinish);
+        Consumer<SharedVariableInteger> action = (x) ->
+        {
+            int step = x.getCurrentValue();
+            switch (step){
+                case 0:
+                    System.out.println("ARE YOU READY?");
+                    step++;
+                    x.setCurrentValue(step);
+                    break;
+                case 1:
+                    System.out.println("SURE?");
+                    step++;
+                    x.setCurrentValue(step);
+                    break;
+                case 2:
+                    System.out.println("3,2,1...");
+                    step++;
+                    x.setCurrentValue(step);
+                    break;
+                case 3:
+                    System.out.println("GO GO GO!");
+                    step++;
+                    x.setCurrentValue(step);
+                    break;
+            }
+
+        };
+
+        Function<SharedVariableInteger, Boolean> done = (x) ->
+        {
+            return x.isFinished();
+        };
+
+        Behaviour simpleSharedVariableBehaviour = simpleBehaviourFactory.addSimpleBehaviour(action, done, sharedVariable, secondHelloAgent);
+        simpleSharedVariableBehaviour.setBehaviourName("SimpleSharedVariableBehaviour");
+        behaviourList.add(simpleSharedVariableBehaviour);
+
+        long time = 5000L;
+        SimpleBehaviourFactory.ActionInterface actionInterfaceWaker =
+                () -> System.out.println("injecting waker behaviour and display this message after wake up");
+//        Behaviour wakerBehaviour = simpleBehaviourFactory.addWakerBehaviour(actionInterfaceWaker, secondHelloAgent, time);
+//        wakerBehaviour.setBehaviourName("WakerBehaviour");
+//        behaviourList.add(wakerBehaviour);
+
+        SimpleBehaviourFactory.ActionInterface actionInterfaceTicker =
+                () -> System.out.println("injecting ticker behaviour and displaying this message every " + time + " milliseconds");
+        Behaviour tickerBehaviour = simpleBehaviourFactory.addTickerBehaviour(actionInterfaceTicker, secondHelloAgent, time);
+        tickerBehaviour.setBehaviourName("TickerBehaviour-" + time + "milliseconds");
+        behaviourList.add(tickerBehaviour);
+        availableBehaviourList.put(tickerBehaviour.getBehaviourName(), tickerBehaviour);
+
     }
 
     @GetMapping
@@ -515,7 +572,8 @@ public class JadeRestController {
 
         if (agent != null && behaviour != null){
             if (behaviour instanceof BehaviourWithFactoryInterface){
-                behaviour = ((BehaviourWithFactoryInterface) behaviour).getInstance();
+//                behaviour = ((BehaviourWithFactoryInterface) behaviour).getInstance();
+                behaviour = ((BehaviourWithFactoryInterface) behaviour).getInstance(agent.getAgentInstance());
             } else if (behaviour.getAgent() != null){
                 return ResponseEntity.badRequest().body(new ResponseErrorMessage("Behaviour " + behaviourName
                 + " is already attached to the Agent " + behaviour.getAgent().getLocalName() + ". You should use behaviours" +

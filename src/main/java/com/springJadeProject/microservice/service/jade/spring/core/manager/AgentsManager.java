@@ -56,7 +56,7 @@ public class AgentsManager {
         }
     }
 
-    public static void addAgentToMainContainer(String nickname, Agent agent){
+    public static synchronized void addAgentToMainContainer(String nickname, Agent agent){
         try {
             if (!agentsOnContainer.containsKey(nickname) && agent != null
                     && !agentsOnContainer.values().contains(agent)){
@@ -76,7 +76,7 @@ public class AgentsManager {
         }
     }
 
-    public static void takeDownAgent(String nickname, Agent agent) {
+    public static synchronized void takeDownAgent(String nickname, Agent agent) {
         try {
             if (agent == null) {
                 throw new JadeAgentException("ERROR: The agent you are trying to shut down is null");

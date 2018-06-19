@@ -28,6 +28,11 @@ public class ReceiveACLMessageBlockBehaviour extends SimpleBehaviour implements 
         return new ReceiveACLMessageBlockBehaviour();
     }
 
+    @Override
+    public Behaviour getInstance(Agent agent) {
+        return getInstance();
+    }
+
     /*Required no-argument constructor for being a singleton component*/
     public ReceiveACLMessageBlockBehaviour(){
 

@@ -27,6 +27,11 @@ public class SimplePrintMessageBehaviour extends OneShotBehaviour implements Beh
     }
 
     @Override
+    public Behaviour getInstance(Agent agent) {
+        return getInstance();
+    }
+
+    @Override
     public void action() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh:m:ss");
         System.out.println(simpleDateFormat.format(new Date()) + " SimplePrintMessageBehaviour is being executed. This is the only message it will display :D");

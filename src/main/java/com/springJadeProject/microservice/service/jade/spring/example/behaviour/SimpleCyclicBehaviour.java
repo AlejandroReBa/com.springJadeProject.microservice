@@ -21,6 +21,11 @@ public class SimpleCyclicBehaviour extends CyclicBehaviour implements BehaviourW
     }
 
     @Override
+    public Behaviour getInstance(Agent agent) {
+        return getInstance();
+    }
+
+    @Override
     public void action() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh:m:ss");
         System.out.println(simpleDateFormat.format(new Date()) + " Cyclic Behaviour is on! This message will be display forever :D");

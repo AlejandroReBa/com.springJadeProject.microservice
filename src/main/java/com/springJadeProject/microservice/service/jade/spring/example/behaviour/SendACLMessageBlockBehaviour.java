@@ -39,6 +39,11 @@ public class SendACLMessageBlockBehaviour extends SimpleBehaviour implements Beh
         return new SendACLMessageBlockBehaviour();
     }
 
+    @Override
+    public Behaviour getInstance(Agent agent) {
+        return getInstance();
+    }
+
     /*Required no-argument constructor for being a singleton component*/
     public SendACLMessageBlockBehaviour(){
     }

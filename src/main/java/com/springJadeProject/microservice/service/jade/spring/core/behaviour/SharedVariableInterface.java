@@ -9,4 +9,5 @@ public interface SharedVariableInterface {
     public abstract boolean isFinished();
 
     public abstract void setFinished(boolean finished);
+
 }
