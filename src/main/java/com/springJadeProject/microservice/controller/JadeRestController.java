@@ -12,6 +12,7 @@ import com.springJadeProject.microservice.service.api.APIDescriptionService;
 import com.springJadeProject.microservice.service.jade.spring.core.agent.AgentInterface;
 import com.springJadeProject.microservice.service.jade.spring.core.agent.SpringAgent;
 import com.springJadeProject.microservice.service.jade.spring.core.behaviour.BehaviourWithFactoryInterface;
+import com.springJadeProject.microservice.service.jade.spring.core.behaviour.SharedVariable;
 import com.springJadeProject.microservice.service.jade.spring.core.behaviour.SharedVariableInteger;
 import com.springJadeProject.microservice.service.jade.spring.core.behaviour.SimpleBehaviourFactory;
 import com.springJadeProject.microservice.service.jade.spring.example.behaviour.ReceiveACLMessageBlockBehaviour;
@@ -213,12 +214,10 @@ public class JadeRestController {
 
         };
 
-        Function<SharedVariableInteger, Boolean> done = (x) ->
-        {
-            return x.isFinished();
-        };
+        Function<SharedVariableInteger, Boolean> done = SharedVariableInteger::isFinished;
+        Behaviour simpleSharedVariableBehaviour =
+                simpleBehaviourFactory.addSimpleBehaviour(action, done, sharedVariable, secondHelloAgent);
 
-        Behaviour simpleSharedVariableBehaviour = simpleBehaviourFactory.addSimpleBehaviour(action, done, sharedVariable, secondHelloAgent);
         simpleSharedVariableBehaviour.setBehaviourName("SimpleSharedVariableBehaviour");
         behaviourList.add(simpleSharedVariableBehaviour);
 
@@ -497,7 +496,45 @@ public class JadeRestController {
         }
     }
 
-    @PostMapping(path="agent/create", consumes=MediaType.APPLICATION_JSON_VALUE)
+//    @PostMapping(path="agent/create", consumes=MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> createAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+//        String className = jsonAgentBehaviourModel.getClassName();
+//        String agentName = jsonAgentBehaviourModel.getAgentName();
+//        AgentInterface agentToCreateInstance;
+//        AgentInterface newAgent;
+//        if (checkAgentClassExistsByClassName(className)){
+//            System.out.println("agent name received by create agent-> " + agentName);
+//            if (!checkAgentInstanceExistsByName(agentName)){
+//                agentToCreateInstance = availableAgentList.get(className);
+//                newAgent = ((SpringAgent) agentToCreateInstance).getNewInstance();
+//                newAgent.setNickname(agentName);
+//                agentList.put(agentName, newAgent);
+//                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " from class " + className + " has been created successfully"));
+//            }else{
+//                return ResponseEntity.status(409).body(new ResponseNotificationMessage("A agent with the name" + jsonAgentBehaviourModel.getAgentName() + " exists already. You can't create two agents with the same name"));
+//            }
+//        }else{
+//            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent class " + jsonAgentBehaviourModel.getClassName() + " doesn't exist in the system"));
+//        }
+//    }
+//
+//    @PostMapping(path="agent/delete", consumes=MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> deleteAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+//        String agentName = jsonAgentBehaviourModel.getAgentName();
+//        AgentInterface agentToDelete;
+//            if (checkAgentInstanceExistsByName(agentName)){
+//                agentToDelete = agentList.get(agentName);
+//                if (((SpringAgent)agentToDelete).isInitiated()){
+//                    agentToDelete.shutDownAgent();
+//                }
+//                agentList.remove(agentName);
+//                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " has been deleted successfully"));
+//            }else{
+//                return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
+//            }
+//    }
+
+    @PutMapping(path="agent", consumes=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> createAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
         String className = jsonAgentBehaviourModel.getClassName();
         String agentName = jsonAgentBehaviourModel.getAgentName();
@@ -519,20 +556,20 @@ public class JadeRestController {
         }
     }
 
-    @PostMapping(path="agent/delete", consumes=MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path="agent", consumes=MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> deleteAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
         String agentName = jsonAgentBehaviourModel.getAgentName();
         AgentInterface agentToDelete;
-            if (checkAgentInstanceExistsByName(agentName)){
-                agentToDelete = agentList.get(agentName);
-                if (((SpringAgent)agentToDelete).isInitiated()){
-                    agentToDelete.shutDownAgent();
-                }
-                agentList.remove(agentName);
-                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " has been deleted successfully"));
-            }else{
-                return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
+        if (checkAgentInstanceExistsByName(agentName)){
+            agentToDelete = agentList.get(agentName);
+            if (((SpringAgent)agentToDelete).isInitiated()){
+                agentToDelete.shutDownAgent();
             }
+            agentList.remove(agentName);
+            return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " has been deleted successfully"));
+        }else{
+            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
+        }
     }
 
 
@@ -721,24 +758,6 @@ public class JadeRestController {
         return result;
     }
 
-//    private Map<String, List<Behaviour>> getBehavioursFromAllAgentsInjected(){
-//        Map<String, List<Behaviour>> result = new HashMap<>();
-//
-//        for (AgentInterface agentInterface : agentList.values()){
-//            result.put(agentInterface.getNickname(), getBehavioursFromAgentInjectedByLocalName(agentInterface.getNickname()));
-//        }
-//        return result;
-//    }
-
-//    private List<AbstractMap.SimpleEntry<Agent, List<Behaviour>>> getBehavioursFromAllAgentsInjected(){
-//        List<AbstractMap.SimpleEntry<Agent, List<Behaviour>>> result = new ArrayList<>();
-//
-//        for (AgentInterface agentInterface : agentList.values()){
-//            result.add(new AbstractMap.SimpleEntry<>(agentInterface.getAgentInstance(), getBehavioursFromAgentInjectedByLocalName(agentInterface.getNickname())));
-//        }
-//        return result;
-//    }
-
     private Boolean checkBehaviourExistsByName(String behaviourName){
         boolean behaviourFound = false;
         int index = 0;
@@ -771,11 +790,9 @@ public class JadeRestController {
                 behaviourNameInList = behaviourList.get(index).getBehaviourName();
 //                agentInList = behaviourList.get(index).getAgent();
                 agentInList = behaviourList.get(index).getAgent();
-                //todo delete System.out.println
                 System.out.println ("Behaviour name:" + behaviourName + " vs Behaviour in list:" + behaviourNameInList );
-                System.out.println ("agentInList: " + agentInList);//+ " -> agentInList: " + agentInList.getLocalName());
+                System.out.println ("agentInList: " + agentInList);
                 if (agentInList != null) System.out.println ("agentName is: " + agentInList.getLocalName());
-                //todo delete System.out.println
                 if (behaviourNameInList != null && behaviourName.equals(behaviourNameInList) && agent.equals(agentInList)){
                     behaviourFound = behaviourList.get(index);
                 }else{
@@ -797,37 +814,6 @@ public class JadeRestController {
     private Boolean checkAgentInstanceExistsByName(String nickname){
         return agentList.containsKey(nickname);
     }
-
-
-    //get behaviours
-
-    //not working, cycle reference don't know why
-//    @GetMapping("/agents/all2")
-//    public List<Agent> getAllAgents2(){
-//        return agentsManager.getAgentsOnContainer();
-////        return amsAgent.agentsIn
-//    }
-
-
-//    @GetMapping(value = "/{id}")
-//    public Student getStudentById(@PathVariable("id") int id){
-//        return studentService.getStudentById(id);
-//    }
-//
-//    @DeleteMapping(value = "/{id}")
-//    public void deleteStudentById(@PathVariable("id") int id){
-//        studentService.removeStudentById(id);
-//    }
-//
-//    @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-//    public void deleteStudentById(@RequestBody Student student){
-//        studentService.updateStudent(student);
-//    }
-//
-//    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
-//    public void insertStudent(@RequestBody Student student){
-//        studentService.insertStudent(student);
-//    }
 
 
 }

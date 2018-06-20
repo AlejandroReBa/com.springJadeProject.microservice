@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 
 	<name>microservice</name>
-	<description>Demo project for Spring Boot</description>
+	<description>API REST for JADE Platform</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>

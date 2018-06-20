@@ -81,6 +81,16 @@ public class SimpleBehaviourFactory{
         return currentBehaviour;
     }
 
+//    public Behaviour addSimpleBehaviour(Consumer<SharedVariableInterface> actionIn,
+//                                                                            Function<SharedVariableInterface, Boolean>
+//                                                                                    doneIn, SharedVariableInterface sharedVariable,
+//                                                                            AgentInterface agentInterface) {
+//
+//        currentBehaviour = new FactorySimpleBehaviour<T>(actionIn, doneIn, sharedVariable);
+//        agentInterface.addBehaviourToAgent(currentBehaviour);
+//        return currentBehaviour;
+//    }
+
 
     private class FactoryOneShotBehaviour extends OneShotBehaviour implements BehaviourWithFactoryInterface{
         ActionInterface actionInterface;
@@ -240,7 +250,6 @@ public class SimpleBehaviourFactory{
         Consumer<T> action;
         Function<T, Boolean> done;
         T sharedVariable;
-        AgentInterface agentInterface;
 
         FactorySimpleBehaviour(Consumer<T> actionIn, Function<T, Boolean> doneIn,
                                T sharedVariableIn) {

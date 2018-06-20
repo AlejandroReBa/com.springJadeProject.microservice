@@ -17,6 +17,4 @@ public class SharedVariable implements SharedVariableInterface {
     public void setFinished(boolean finished) {
         this.finished = finished;
     }
-
-
 }

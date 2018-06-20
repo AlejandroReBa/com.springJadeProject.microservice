@@ -24,7 +24,8 @@ public class PlainAgent extends SpringAgent implements AgentInterface{
     protected void setup(){
         super.setup();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh:m:ss");
-        System.out.println (simpleDateFormat.format(new Date()) + ": Plain Agent " + this.getLocalName() + " is running! :D  -> Welcome!");
+        System.out.println (simpleDateFormat.format(new Date()) + ": Plain Agent " +
+                this.getLocalName() + " is running! :D  -> Welcome!");
     }
 
     @Override
@@ -33,10 +34,10 @@ public class PlainAgent extends SpringAgent implements AgentInterface{
         System.out.println ("Plain Agent " + this.getLocalName() + " has stopped! D: -> Goodbye!");
     }
 
-
     @Override
     public AgentInterface getNewInstance() {
         return new PlainAgent();
     }
 
 }
+

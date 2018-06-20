@@ -34,7 +34,8 @@ public class SimplePrintMessageBehaviour extends OneShotBehaviour implements Beh
     @Override
     public void action() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy-hh:m:ss");
-        System.out.println(simpleDateFormat.format(new Date()) + " SimplePrintMessageBehaviour is being executed. This is the only message it will display :D");
+        System.out.println(simpleDateFormat.format(new Date())
+                + " SimplePrintMessageBehaviour is running. This is the only message it will display :D");
     }
 
     @JsonIgnore
@@ -44,3 +45,4 @@ public class SimplePrintMessageBehaviour extends OneShotBehaviour implements Beh
     }
 
 }
+

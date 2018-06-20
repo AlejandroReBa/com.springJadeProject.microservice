@@ -6,8 +6,8 @@ package com.springJadeProject.microservice.service.jade.spring.core.behaviour;
  */
 public interface SharedVariableInterface {
 
-    public abstract boolean isFinished();
+    boolean isFinished();
 
-    public abstract void setFinished(boolean finished);
+    void setFinished(boolean finished);
 
 }
