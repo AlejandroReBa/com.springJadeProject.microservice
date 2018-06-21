@@ -95,10 +95,11 @@ public class JadeRestController {
     private APIAgentService apiAgentService;
 
     @Autowired
-    private AMSAgent amsAgent;
+    private APIDescriptionService apiDescriptionService;
 
     @Autowired
-    private APIDescriptionService apiDescriptionService;
+    private AMSAgent amsAgent;
+
     /**Injections required by the framework above**/
 
 
@@ -220,6 +221,7 @@ public class JadeRestController {
 
         simpleSharedVariableBehaviour.setBehaviourName("SimpleSharedVariableBehaviour");
         behaviourList.add(simpleSharedVariableBehaviour);
+        availableBehaviourList.put(simpleSharedVariableBehaviour.getBehaviourName(), simpleSharedVariableBehaviour);
 
         long time = 5000L;
         SimpleBehaviourFactory.ActionInterface actionInterfaceWaker =
@@ -353,24 +355,10 @@ public class JadeRestController {
         return new ArrayList<>(agentList.keySet());
     }
 
-    //TODO TESTING IS DONE. IT WORKS WELL.. kind of
     @GetMapping("/agents/available/behaviours")
     public List<JsonBehavioursModel> getBehavioursFromAllAgent(){
         return this.getBehavioursFromAllAgentsInjected();
     }
-    //TODO ABOVE METHOD IS BEING TESTING -> AFTER THAT ADD TO API
-
-//    @GetMapping("/agents/available/behaviours")
-//    public Map<String, List<Behaviour>> getBehavioursFromAllAgent(){
-//        return this.getBehavioursFromAllAgentsInjected();
-//    }
-
-//    @GetMapping("/agents/available/behaviours")
-//    public List<AbstractMap.SimpleEntry<Agent, List<Behaviour>>> getBehavioursFromAllAgent(){
-//        return this.getBehavioursFromAllAgentsInjected();
-//    }
-
-
 
     @GetMapping("/agent/available/behaviours/{localName}")
     public List<Behaviour> getBehavioursFromAgent(@PathVariable("localName") String localName){
@@ -423,115 +411,90 @@ public class JadeRestController {
         return apiAgentService.findRunningBehavioursNameFromAgentByLocalName(localName);
     }
 
-    @PostMapping(path="agent/init", consumes=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> initAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
-        String agentName = jsonAgentBehaviourModel.getAgentName();
-        AgentInterface agentToInit = agentList.get(agentName);
-        Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(agentName);
-        if (agentToInit != null){
-           if (agentRunningOnContainer == null){
-               ((SpringAgent) agentToInit.getAgentInstance()).init();
-               return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " initiated successfully"));
-           }else{
-               return ResponseEntity.status(409).body(new ResponseNotificationMessage("Agent " + agentName + " was already running. You can't init the same agent twice"));
-           }
-        }else if (agentName == null){
-            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'agentName':'<your agent nickname/localName>'} is required"));
-        }else{
-            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
-        }
-    }
-
-    @PostMapping(path="agent/stop", consumes=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> stopAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
-        String agentName = jsonAgentBehaviourModel.getAgentName();
-        AgentInterface agentToStop = agentList.get(agentName);
-        Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(agentName);
-        AgentInterface newAgentInstance;
-            if (agentToStop != null){
-                if (agentRunningOnContainer != null){
-                    newAgentInstance =  ((SpringAgent) agentRunningOnContainer).shutDownAgent();
-                    //add the new instance of this agent to agentList, overriding the old instance we have just stopped
-                    agentList.put(agentName, newAgentInstance);
-                    return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " stopped successfully"));
-                }else{
-                    return ResponseEntity.status(409).body(new ResponseNotificationMessage("Agent " + agentName + " hasn't been found running in the system"));
-                }
-            }else if (agentName == null){
-                return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'agentName':'<your agent nickname/localName>'} is required"));
-            }else{
-                return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
-            }
-        }
-
-    @PostMapping(path="agent/restart", consumes=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> restartAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
-        String agentName = jsonAgentBehaviourModel.getAgentName();
-        AgentInterface agentToRestart = agentList.get(agentName);
-        Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(agentName);
-        AgentInterface newAgentInstance;
-        if (agentToRestart != null){
-            if (agentRunningOnContainer != null){
-                newAgentInstance = ((SpringAgent) agentRunningOnContainer).shutDownAgent();
-                //add the new instance of this agent to agentList, overriding the old instance we have just stopped
-                agentList.put(agentName, newAgentInstance);
-                try {
-                    Thread.sleep(1000);
-                while (((SpringAgent) agentRunningOnContainer).isInitiated()){
-                    //waiting until agent be shut down
-                    Thread.sleep(1000);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                newAgentInstance.init();
-                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " was restarted successfully"));
-            }else{
-                return ResponseEntity.status(409).body(new ResponseNotificationMessage("Agent " + agentName + " hasn't been found running in the system"));
-            }
-        }else if (agentName == null){
-            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'agentName':'<your agent nickname/localName>'} is required"));
-        }else{
-            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
-        }
-    }
-
-//    @PostMapping(path="agent/create", consumes=MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<?> createAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
-//        String className = jsonAgentBehaviourModel.getClassName();
+//    @PostMapping(path="agent/init", consumes=MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> initAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
 //        String agentName = jsonAgentBehaviourModel.getAgentName();
-//        AgentInterface agentToCreateInstance;
-//        AgentInterface newAgent;
-//        if (checkAgentClassExistsByClassName(className)){
-//            System.out.println("agent name received by create agent-> " + agentName);
-//            if (!checkAgentInstanceExistsByName(agentName)){
-//                agentToCreateInstance = availableAgentList.get(className);
-//                newAgent = ((SpringAgent) agentToCreateInstance).getNewInstance();
-//                newAgent.setNickname(agentName);
-//                agentList.put(agentName, newAgent);
-//                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " from class " + className + " has been created successfully"));
-//            }else{
-//                return ResponseEntity.status(409).body(new ResponseNotificationMessage("A agent with the name" + jsonAgentBehaviourModel.getAgentName() + " exists already. You can't create two agents with the same name"));
-//            }
+//        AgentInterface agentToInit = agentList.get(agentName);
+//        Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(agentName);
+//        if (agentToInit != null){
+//           if (agentRunningOnContainer == null){
+//               ((SpringAgent) agentToInit.getAgentInstance()).init();
+//               return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " initiated successfully"));
+//           }else{
+//               return ResponseEntity.status(409).body(new ResponseNotificationMessage("Agent " + agentName + " was already running. You can't init the same agent twice"));
+//           }
+//        }else if (agentName == null){
+//            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'agentName':'<your agent nickname/localName>'} is required"));
 //        }else{
-//            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent class " + jsonAgentBehaviourModel.getClassName() + " doesn't exist in the system"));
+//            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
 //        }
 //    }
-//
-//    @PostMapping(path="agent/delete", consumes=MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<?> deleteAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+
+    @PostMapping(path="agent", consumes=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> initStopRestartAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+        String action = (jsonAgentBehaviourModel.getAction() + "").trim();
+        switch (action){
+            case JsonAgentBehaviourModel.INIT: return initAgent(jsonAgentBehaviourModel);
+            case JsonAgentBehaviourModel.STOP: return stopAgent(jsonAgentBehaviourModel);
+            case JsonAgentBehaviourModel.RESTART: return restartAgent(jsonAgentBehaviourModel);
+            default: return ResponseEntity.badRequest().body(new ResponseErrorMessage("Action " + action +
+                    " is not allowed. Try init, stop or restart"));
+        }
+
+    }
+
+//    @PostMapping(path="agent/stop", consumes=MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> stopAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
 //        String agentName = jsonAgentBehaviourModel.getAgentName();
-//        AgentInterface agentToDelete;
-//            if (checkAgentInstanceExistsByName(agentName)){
-//                agentToDelete = agentList.get(agentName);
-//                if (((SpringAgent)agentToDelete).isInitiated()){
-//                    agentToDelete.shutDownAgent();
+//        AgentInterface agentToStop = agentList.get(agentName);
+//        Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(agentName);
+//        AgentInterface newAgentInstance;
+//            if (agentToStop != null){
+//                if (agentRunningOnContainer != null){
+//                    newAgentInstance =  ((SpringAgent) agentRunningOnContainer).shutDownAgent();
+//                    //add the new instance of this agent to agentList, overriding the old instance we have just stopped
+//                    agentList.put(agentName, newAgentInstance);
+//                    return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " stopped successfully"));
+//                }else{
+//                    return ResponseEntity.status(409).body(new ResponseNotificationMessage("Agent " + agentName + " hasn't been found running in the system"));
 //                }
-//                agentList.remove(agentName);
-//                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " has been deleted successfully"));
+//            }else if (agentName == null){
+//                return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'agentName':'<your agent nickname/localName>'} is required"));
 //            }else{
 //                return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
 //            }
+//        }
+
+//    @PostMapping(path="agent/restart", consumes=MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> restartAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+//        String agentName = jsonAgentBehaviourModel.getAgentName();
+//        AgentInterface agentToRestart = agentList.get(agentName);
+//        Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(agentName);
+//        AgentInterface newAgentInstance;
+//        if (agentToRestart != null){
+//            if (agentRunningOnContainer != null){
+//                newAgentInstance = ((SpringAgent) agentRunningOnContainer).shutDownAgent();
+//                //add the new instance of this agent to agentList, overriding the old instance we have just stopped
+//                agentList.put(agentName, newAgentInstance);
+//                try {
+//                    Thread.sleep(1000);
+//                while (((SpringAgent) agentRunningOnContainer).isInitiated()){
+//                    //waiting until agent be shut down
+//                    Thread.sleep(1000);
+//                    }
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//                newAgentInstance.init();
+//                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " was restarted successfully"));
+//            }else{
+//                return ResponseEntity.status(409).body(new ResponseNotificationMessage("Agent " + agentName + " hasn't been found running in the system"));
+//            }
+//        }else if (agentName == null){
+//            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'agentName':'<your agent nickname/localName>'} is required"));
+//        }else{
+//            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
+//        }
 //    }
 
     @PutMapping(path="agent", consumes=MediaType.APPLICATION_JSON_VALUE)
@@ -572,7 +535,6 @@ public class JadeRestController {
         }
     }
 
-
     @GetMapping("/behaviours") //behaviours instances bounded to agents.
     public List<Behaviour> getBehaviours(){
         return behaviourList;
@@ -597,8 +559,223 @@ public class JadeRestController {
         return new ArrayList<>(availableBehaviourList.keySet());
     }
 
-    @PostMapping(path="agent/add/behaviour", consumes=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> addBehaviourToAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+//    @PostMapping(path="agent/add/behaviour", consumes=MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> addBehaviourToAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+//        boolean isBehaviourAdded;
+//        String agentName = jsonAgentBehaviourModel.getAgentName();
+//        String behaviourName = jsonAgentBehaviourModel.getBehaviourName();
+//        boolean startNow = jsonAgentBehaviourModel.getStartNow();
+//
+//        AgentInterface agent = agentList.get(agentName);
+//        Behaviour behaviour = availableBehaviourList.get(behaviourName);
+//
+//        if (agent != null && behaviour != null){
+//            if (behaviour instanceof BehaviourWithFactoryInterface){
+////                behaviour = ((BehaviourWithFactoryInterface) behaviour).getInstance();
+//                behaviour = ((BehaviourWithFactoryInterface) behaviour).getInstance(agent.getAgentInstance());
+//            } else if (behaviour.getAgent() != null){
+//                return ResponseEntity.badRequest().body(new ResponseErrorMessage("Behaviour " + behaviourName
+//                + " is already attached to the Agent " + behaviour.getAgent().getLocalName() + ". You should use behaviours" +
+//                        " with factory methods to get multiples instances for different agents."));
+//            }
+//
+//            if (!startNow) {
+//                isBehaviourAdded = agent.addBehaviourToAgent(behaviour);
+//            }else{
+//                isBehaviourAdded = agent.addBehaviourToAgentAndInit(behaviour);
+//            }
+//
+//            if (isBehaviourAdded){
+//                behaviourList.add(behaviour);
+//                return ResponseEntity.ok(new ResponseNotificationMessage("Behaviour" + behaviourName
+//                        + " has been added to the agent " + agentName + " successfully"));
+//            }else{
+//                return ResponseEntity.status(500).body(new ResponseErrorMessage("The agent " + agentName
+//                        + " has already the behaviour " + behaviourName + ". It is not allowed" +
+//                        " to add a behaviour to the same agent twice"));
+//            }
+//
+//        }else if (agentName == null || behaviourName == null){
+//            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Values 'agentName' and 'behaviourName' are required"));
+//        }else{
+//            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " or behaviour "
+//                    + behaviourName + " don't exist in the system"));
+//        }
+//
+//    }
+
+    @PostMapping(path="agent/behaviour", consumes=MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> addResetRemoveBehaviourToAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+        String action = (jsonAgentBehaviourModel.getAction() + "").trim();
+        switch (action){
+            case JsonAgentBehaviourModel.ADD: return addBehaviourToAgent(jsonAgentBehaviourModel);
+            case JsonAgentBehaviourModel.RESET: return resetBehaviourFromAgent(jsonAgentBehaviourModel);
+            case JsonAgentBehaviourModel.REMOVE: return removeBehaviourFromAgent(jsonAgentBehaviourModel);
+            default: return ResponseEntity.badRequest().body(new ResponseErrorMessage("Action " + action +
+                    " is not allowed. Try add, reset or remove"));
+        }
+            }
+
+
+//    @PostMapping(path="agent/reset/behaviour", consumes=MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> resetBehaviourFromAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+//        boolean isBehaviourReset;
+//        String agentName = jsonAgentBehaviourModel.getAgentName();
+//        String behaviourName = jsonAgentBehaviourModel.getBehaviourName();
+//
+//        AgentInterface agent = agentList.get(agentName);
+//        //We could've avoid this step but we want to be able of response that the behaviour specified don't exist in
+//        //the system instead of only saying that is not attached to the agent
+//        boolean behaviourExists = checkBehaviourExistsByName(behaviourName);
+//
+//        if (agent != null && behaviourExists){
+//            isBehaviourReset = agent.resetBehaviourFromAgent(behaviourName);
+//
+//            if (isBehaviourReset){
+//                return ResponseEntity.ok(new ResponseNotificationMessage("Behaviour " + behaviourName
+//                        + " on agent " + agentName + " has been reset successfully"));
+//            }else{
+//                return ResponseEntity.status(500).body(new ResponseErrorMessage("Behaviour " + behaviourName
+//                        + " is not attached to the agent " + agentName +
+//                        " or it is not added to the current execution"));
+//            }
+//        }else if (agentName == null || behaviourName == null){
+//            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Values 'agentName' and 'behaviourName' are required"));
+//        }else{
+//            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " or behaviour "
+//                    + behaviourName + " don't exist in the system"));
+//        }
+//
+//    }
+
+//    @PostMapping(path="agent/remove/behaviour", consumes=MediaType.APPLICATION_JSON_VALUE)
+//    public ResponseEntity<?> removeBehaviourFromAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+//        boolean isBehaviourRemoved;
+//        String agentName = jsonAgentBehaviourModel.getAgentName();
+//        String behaviourName = jsonAgentBehaviourModel.getBehaviourName();
+//        boolean removeForever = jsonAgentBehaviourModel.getForever();
+//
+//        AgentInterface agent = agentList.get(agentName);
+//        System.out.println ("Agent name is: " + agentName);
+//        Behaviour behaviourToRemove;
+//        String successMessage;
+//
+//        if (agent != null){
+//            behaviourToRemove = getBehaviourByNameAndAgent(agent.getAgentInstance(), behaviourName);
+//            if (behaviourToRemove != null) {
+////                removeForever = jsonAgentBehaviourModel.getForever() == null ? false : jsonAgentBehaviourModel.getForever();
+//                if (removeForever) {
+//                    isBehaviourRemoved = agent.removeBehaviourFromAgentForever(behaviourToRemove);
+//                }else{
+//                    isBehaviourRemoved = agent.removeBehaviourFromAgent(behaviourToRemove);
+//                }
+//
+//                if (isBehaviourRemoved) {
+//                    successMessage = "Behaviour " + behaviourName
+//                            + " on agent " + agentName + " has been removed successfully";
+//
+//                    if (removeForever){
+//                        //only remove behaviour from list if it is removed forever. Otherwise for current run
+//                        //the behaviour is not running but we can not delete it from the list todo may the problem of checking behaviours
+//                        //and see one that is not working on in the current run
+//                        behaviourList.remove(behaviourToRemove);
+//                        successMessage += " forever";
+//                    }
+//                    return ResponseEntity.ok(new ResponseNotificationMessage(successMessage));
+//                } else {
+//                    //we should never reach this response.
+//                    return ResponseEntity.status(500).body(new ResponseErrorMessage("It seems we have had some problems" +
+//                            " removing the behaviour " + behaviourName
+//                            + ". Please, try again later"));
+//                }
+//            }else if (behaviourName == null){
+//                return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value 'behaviourName' is required"));
+//            }else{
+//                return ResponseEntity.badRequest().body(new ResponseErrorMessage("Behaviour " + behaviourName
+//                        + " don't exist attached to agent " + agentName + " in the system"));
+//            }
+//        }else if (agentName == null){
+//            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value 'agentName' is required"));
+//        }else{
+//            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName
+//                    + " don't exist in the system"));
+//        }
+//
+//    }
+
+
+    private ResponseEntity<?> initAgent (JsonAgentBehaviourModel jsonAgentBehaviourModel){
+        String agentName = jsonAgentBehaviourModel.getAgentName();
+        AgentInterface agentToInit = agentList.get(agentName);
+        Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(agentName);
+        if (agentToInit != null){
+            if (agentRunningOnContainer == null){
+                ((SpringAgent) agentToInit.getAgentInstance()).init();
+                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " initiated successfully"));
+            }else{
+                return ResponseEntity.status(409).body(new ResponseNotificationMessage("Agent " + agentName + " was already running. You can't init the same agent twice"));
+            }
+        }else if (agentName == null){
+            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'agentName':'<your agent nickname/localName>'} is required"));
+        }else{
+            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
+        }
+    }
+
+    private ResponseEntity<?> stopAgent(JsonAgentBehaviourModel jsonAgentBehaviourModel){
+        String agentName = jsonAgentBehaviourModel.getAgentName();
+        AgentInterface agentToStop = agentList.get(agentName);
+        Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(agentName);
+        AgentInterface newAgentInstance;
+        if (agentToStop != null){
+            if (agentRunningOnContainer != null){
+                newAgentInstance =  ((SpringAgent) agentRunningOnContainer).shutDownAgent();
+                //add the new instance of this agent to agentList, overriding the old instance we have just stopped
+                agentList.put(agentName, newAgentInstance);
+                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " stopped successfully"));
+            }else{
+                return ResponseEntity.status(409).body(new ResponseNotificationMessage("Agent " + agentName + " hasn't been found running in the system"));
+            }
+        }else if (agentName == null){
+            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'agentName':'<your agent nickname/localName>'} is required"));
+        }else{
+            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
+        }
+    }
+
+    private ResponseEntity<?> restartAgent(JsonAgentBehaviourModel jsonAgentBehaviourModel){
+        String agentName = jsonAgentBehaviourModel.getAgentName();
+        AgentInterface agentToRestart = agentList.get(agentName);
+        Agent agentRunningOnContainer = apiAgentService.findActiveAgentByLocalName(agentName);
+        AgentInterface newAgentInstance;
+        if (agentToRestart != null){
+            if (agentRunningOnContainer != null){
+                newAgentInstance = ((SpringAgent) agentRunningOnContainer).shutDownAgent();
+                //add the new instance of this agent to agentList, overriding the old instance we have just stopped
+                agentList.put(agentName, newAgentInstance);
+                try {
+                    Thread.sleep(1000);
+                    while (((SpringAgent) agentRunningOnContainer).isInitiated()){
+                        //waiting until agent be shut down
+                        Thread.sleep(1000);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                newAgentInstance.init();
+                return ResponseEntity.ok(new ResponseNotificationMessage("Agent " + agentName + " was restarted successfully"));
+            }else{
+                return ResponseEntity.status(409).body(new ResponseNotificationMessage("Agent " + agentName + " hasn't been found running in the system"));
+            }
+        }else if (agentName == null){
+            return ResponseEntity.unprocessableEntity().body(new ResponseErrorMessage("Value {'agentName':'<your agent nickname/localName>'} is required"));
+        }else{
+            return ResponseEntity.badRequest().body(new ResponseErrorMessage("Agent " + agentName + " doesn't exist in the system"));
+        }
+    }
+
+
+    private ResponseEntity<?> addBehaviourToAgent(JsonAgentBehaviourModel jsonAgentBehaviourModel){
         boolean isBehaviourAdded;
         String agentName = jsonAgentBehaviourModel.getAgentName();
         String behaviourName = jsonAgentBehaviourModel.getBehaviourName();
@@ -609,11 +786,10 @@ public class JadeRestController {
 
         if (agent != null && behaviour != null){
             if (behaviour instanceof BehaviourWithFactoryInterface){
-//                behaviour = ((BehaviourWithFactoryInterface) behaviour).getInstance();
                 behaviour = ((BehaviourWithFactoryInterface) behaviour).getInstance(agent.getAgentInstance());
             } else if (behaviour.getAgent() != null){
                 return ResponseEntity.badRequest().body(new ResponseErrorMessage("Behaviour " + behaviourName
-                + " is already attached to the Agent " + behaviour.getAgent().getLocalName() + ". You should use behaviours" +
+                        + " is already attached to the Agent " + behaviour.getAgent().getLocalName() + ". You should use behaviours" +
                         " with factory methods to get multiples instances for different agents."));
             }
 
@@ -643,8 +819,7 @@ public class JadeRestController {
     }
 
 
-    @PostMapping(path="agent/reset/behaviour", consumes=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> resetBehaviourFromAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+    private ResponseEntity<?> resetBehaviourFromAgent(JsonAgentBehaviourModel jsonAgentBehaviourModel){
         boolean isBehaviourReset;
         String agentName = jsonAgentBehaviourModel.getAgentName();
         String behaviourName = jsonAgentBehaviourModel.getBehaviourName();
@@ -674,8 +849,8 @@ public class JadeRestController {
 
     }
 
-    @PostMapping(path="agent/remove/behaviour", consumes=MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> removeBehaviourFromAgent(@RequestBody JsonAgentBehaviourModel jsonAgentBehaviourModel){
+
+    private ResponseEntity<?> removeBehaviourFromAgent(JsonAgentBehaviourModel jsonAgentBehaviourModel){
         boolean isBehaviourRemoved;
         String agentName = jsonAgentBehaviourModel.getAgentName();
         String behaviourName = jsonAgentBehaviourModel.getBehaviourName();

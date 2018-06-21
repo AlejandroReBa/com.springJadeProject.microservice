@@ -20,15 +20,15 @@
 /api/agent/behaviours/names/{localName};GET;get all names of all behaviours attached to the specified agent running in the Jade Container;-;List of names
 /api/agent/behaviours/[ready-blocked-running]/{localName};GET;get information of all behaviours whose state is ready, blocked or running, attached to the specified agent running in ghe Jade Container;-;List of behaviours
 /api/agent/behaviours/[ready-blocked-running]/names/{localName};GET;get all names of all behaviours whose state is ready, blocked or running, attached to the specified agent running in ghe Jade Container;-;List of names
-/api/agent/init;POST;init the specified agent in the Jade Container;{agentName:String};{message:String} or {error:String} with the result of the request
-/api/agent/stop;POST;stop the specified agent in the Jade Container;{agentName:String};{message:String} or {error:String} with the result of the request
-/api/agent/restart;POST;restart the specified agent in the Jade Container;{agentName:String};{message:String} or {error:String} with the result of the request
-/api/agent/create;POST;create a new agent;{className:String, agentName:String};{message:String} or {error:String} with the result of the request
-/api/agent/delete;POST;delete an existing agent;{agentName:String};{message:String} or {error:String} with the result of the request
+/api/agent;POST;init the specified agent in the Jade Container;{agentName:String, action:'init'};{message:String} or {error:String} with the result of the request
+/api/agent;POST;stop the specified agent in the Jade Container;{agentName:String, action:'stop'};{message:String} or {error:String} with the result of the request
+/api/agent;POST;restart the specified agent in the Jade Container;{agentName:String, action:'restart'};{message:String} or {error:String} with the result of the request
+/api/agent;PUT;create a new agent;{className:String, agentName:String};{message:String} or {error:String} with the result of the request
+/api/agent;DELETE;delete an existing agent;{agentName:String};{message:String} or {error:String} with the result of the request
 /api/behaviours;GET;get information of all behaviours instances which are in the Jade Container;-;List of behaviours
 /api/behaviours/names;GET;get all names of all behaviours instances whhich are in the Jade Container;-;List of names
 /api/behaviours/available;GET;get information of all behaviours I can add to distinct agents. Some of them are single intances, other are factory so I can attach them to every agent I need;-;List of behaviours
 /api/behaviours/available/names;GET;get all names of all behaviours I can add to distinct agents. Some of them are single intances, other are factory so I can attach them to every agent I need;-;List of behaviours
-/api/agent/add/behaviour;POST;add the specified behaviour to the specified agent;{agentName:String, behaviourName:String, startNow:boolean};{message:String} or {error:String} with the result of the request
-/api/agent/reset/behaviour;POST;reset the specified behaviour from the specified agent;{agentName:String, behaviourName:String};{message:String} or {error:String} with the result of the request
-/api/agent/remove/behaviour;POST;remove the specified behaviour from the specified agent;{agentName:String, behaviourName:String, forever:boolean};{message:String} or {error:String} with the result of the request
+/api/agent/behaviour;POST;add the specified behaviour to the specified agent;{agentName:String, action:'add', behaviourName:String, startNow:boolean};{message:String} or {error:String} with the result of the request
+/api/agent/behaviour;POST;reset the specified behaviour from the specified agent;{agentName:String, action:'reset', behaviourName:String};{message:String} or {error:String} with the result of the request
+/api/agent/behaviour;POST;remove the specified behaviour from the specified agent;{agentName:String, action:'remove', behaviourName:String, forever:boolean};{message:String} or {error:String} with the result of the request
